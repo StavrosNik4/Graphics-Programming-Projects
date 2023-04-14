@@ -5,8 +5,28 @@
 
 // Global variables
 int numberOfPoints = 15000;
-int flagRandom = 1; 
+int flagRandom = 1;
 int shape = 5;
+int last_x = 0;
+int last_y = 0;
+
+
+// function to update the view based on the position of the cursor
+void mouse_callback_func(int x, int y) {
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	//gluOrtho2D(- (double) x, 500.0 - (double) x, 500.0 - (double) y, - (double) y);
+	gluOrtho2D(- (double) x, 500.0 - (double) x, - (double) y, 500.0 - (double) y);
+	glMatrixMode(GL_MODELVIEW);
+
+	glutPostRedisplay(); // display
+
+	printf("%d %d \n", x, y);
+
+	last_x = x;
+	last_y = y;
+}
 
 void myinit(void)
 {
@@ -34,11 +54,11 @@ void display(void)
 	typedef GLfloat point2[2];
 
 	point2 pentagon[5] = {
-							{500.0, 1000.0},
-							{250.0, 0.0},
-							{750.0, 0.0},
-							{0.0, 2.0 * 275.0},
-							{1000.0, 2.0 * 275.0}
+							{500.0 / 2.0, 1000.0 / 2.0},
+							{250.0 / 2.0, 0.0},
+							{750.0 / 2.0, 0.0},
+							{0.0, 275.0},
+							{1000.0 / 2.0, 275.0}
 	}; // ΕΔΩ /* A pentagon */ 
 
 	point2 hexagon[6] = {
@@ -96,23 +116,27 @@ void menu(int id) //menu callback
 	if (id == 1) {
 		numberOfPoints = 8000;
 		flagRandom = 0;
-		display();
+		glutPostRedisplay();
+		//display();
 	}
-	
+
 	if (id == 2) {
 		numberOfPoints = 15000;
 		flagRandom = 1;
-		display();
+		glutPostRedisplay();
+		//display();
 	}
 
 	if (id == 3) {
 		shape = 5;
-		display();
+		glutPostRedisplay();
+		//display();
 	}
 
 	if (id == 4) {
 		shape = 6;
-		display();
+		glutPostRedisplay();
+		//display();
 	}
 }
 
@@ -126,6 +150,7 @@ void main(int argc, char** argv)
 	glutInitWindowSize(500, 500); /* 500 x 500 pixel window */
 	glutInitWindowPosition(0, 0); /* place window top left on display */
 	glutCreateWindow("Sierpinski Gasket"); /* window title */
+	glutMotionFunc(mouse_callback_func); //callback registration
 	glutDisplayFunc(display); /* display callback invoked when window opened */
 
 	myinit(); /* set attributes */
