@@ -19,7 +19,8 @@ void mouse_callback_func(int x, int y) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(-(double) x, 500.0 - (double) x, 500.0 - (double) y, -(double) y);
+
+	gluOrtho2D(-(double)x, 500.0 - (double)x, 500.0 - (double)y, -(double)y);
 	//gluOrtho2D(-(double) x, 500.0 - (double) x, -(double) y, 500.0 - (double) y);
 	glMatrixMode(GL_MODELVIEW);
 
@@ -30,8 +31,7 @@ void mouse_callback_func(int x, int y) {
 
 	printf("%d %d \n", x, y);
 
-	last_x = x;
-	last_y = y;
+	
 }
 
 void myinit(void)
@@ -47,7 +47,7 @@ void myinit(void)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0.0, 500.0, 500.0, 0.0);
+	gluOrtho2D(250.00, -250.00, 250.00, -250.00);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -60,11 +60,11 @@ void display(void)
 	typedef GLfloat point2[2];
 
 	point2 pentagon[5] = {
-							{250.0, -500.0 / 2.0},
-							{500.0, -250.0 / 2.0},
+							{250.0, -500.0 },
+							{500.0, -250.0 },
 							{125.0, 0.0},
 							{375.0, 0.0},
-							{0.0, -275.0 / 2.0}
+							{0.0, -275.0}
 	}; // ΕΔΩ /* A pentagon */ 
 
 	point2 hexagon[6] = {
@@ -172,4 +172,3 @@ void main(int argc, char** argv)
 
 	glutMainLoop(); /* enter event loop */
 }
-
