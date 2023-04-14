@@ -10,17 +10,23 @@ int shape = 5;
 int last_x = 0;
 int last_y = 0;
 
+void left_mouse_callback_func(int button, int state, int x, int y) {
+
+}
 
 // function to update the view based on the position of the cursor
 void mouse_callback_func(int x, int y) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//gluOrtho2D(- (double) x, 500.0 - (double) x, 500.0 - (double) y, - (double) y);
-	gluOrtho2D(- (double) x, 500.0 - (double) x, - (double) y, 500.0 - (double) y);
+	gluOrtho2D(-(double) x, 500.0 - (double) x, 500.0 - (double) y, -(double) y);
+	//gluOrtho2D(-(double) x, 500.0 - (double) x, -(double) y, 500.0 - (double) y);
 	glMatrixMode(GL_MODELVIEW);
 
 	glutPostRedisplay(); // display
+
+	//printf("%s\n", "new");
+	//printf("%lf %lf %lf %lf \n", -(double)x, 500.0 - (double)x, -(double)y, 500.0 - (double)y);
 
 	printf("%d %d \n", x, y);
 
@@ -41,7 +47,7 @@ void myinit(void)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0.0, 500.0, 0.0, 500.0);
+	gluOrtho2D(0.0, 500.0, 500.0, 0.0);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -54,11 +60,11 @@ void display(void)
 	typedef GLfloat point2[2];
 
 	point2 pentagon[5] = {
-							{500.0 / 2.0, 1000.0 / 2.0},
-							{250.0 / 2.0, 0.0},
-							{750.0 / 2.0, 0.0},
-							{0.0, 275.0},
-							{1000.0 / 2.0, 275.0}
+							{250.0, -500.0 / 2.0},
+							{500.0, -250.0 / 2.0},
+							{125.0, 0.0},
+							{375.0, 0.0},
+							{0.0, -275.0 / 2.0}
 	}; // ΕΔΩ /* A pentagon */ 
 
 	point2 hexagon[6] = {
