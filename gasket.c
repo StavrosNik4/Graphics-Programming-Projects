@@ -7,31 +7,36 @@
 int numberOfPoints = 15000;
 int flagRandom = 1;
 int shape = 5;
-int last_x = 0;
-int last_y = 0;
+int leftButtonPressed = 0;
 
-void left_mouse_callback_func(int button, int state, int x, int y) {
+// function to update the view based on the position of the cursor
+void mouse_motion_callback_func(int x, int y) {
+
+	if (leftButtonPressed) {
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		gluOrtho2D(-(double)x, 500.0 - (double)x, 500.0 - (double)y, -(double)y);
+		//gluOrtho2D(-(double) x, 500.0 - (double) x, -(double) y, 500.0 - (double) y);
+		glMatrixMode(GL_MODELVIEW);
+
+		glutPostRedisplay(); // display
+
+		printf("%d %d \n", x, y);
+	}
 
 }
 
-// function to update the view based on the position of the cursor
-void mouse_callback_func(int x, int y) {
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	gluOrtho2D(-(double)x, 500.0 - (double)x, 500.0 - (double)y, -(double)y);
-	//gluOrtho2D(-(double) x, 500.0 - (double) x, -(double) y, 500.0 - (double) y);
-	glMatrixMode(GL_MODELVIEW);
-
-	glutPostRedisplay(); // display
-
-	//printf("%s\n", "new");
-	//printf("%lf %lf %lf %lf \n", -(double)x, 500.0 - (double)x, -(double)y, 500.0 - (double)y);
-
-	printf("%d %d \n", x, y);
-
-	
+// Callback function for mouse button events
+void left_mouse_callback_func(int button, int state, int x, int y) {
+	if (button == GLUT_LEFT_BUTTON)
+	{
+		if (state == GLUT_DOWN)
+			leftButtonPressed = 1;
+		else
+			leftButtonPressed = 0;
+	}
 }
 
 void myinit(void)
@@ -68,12 +73,12 @@ void display(void)
 	}; // ΕΔΩ /* A pentagon */ 
 
 	point2 hexagon[6] = {
-							{250.0, 1000.0},
-							{750.0, 1000.0},
-							{250.0, 0.0},
-							{750.0, 0.0},
-							{0.0, 2.0 * 275.0},
-							{1000.0, 2.0 * 275.0}
+							{250.0 / 2.0, 1000.0 / 2.0},
+							{750.0 / 2.0, 1000.0 / 2.0},
+							{250.0 / 2.0, 0.0},
+							{750.0 / 2.0, 0.0},
+							{0.0, 275.0},
+							{1000.0 / 2.0, 275.0}
 	}; // ΕΔΩ /* A pentagon */
 
 	int i, j, k;
@@ -156,7 +161,8 @@ void main(int argc, char** argv)
 	glutInitWindowSize(500, 500); /* 500 x 500 pixel window */
 	glutInitWindowPosition(0, 0); /* place window top left on display */
 	glutCreateWindow("Sierpinski Gasket"); /* window title */
-	glutMotionFunc(mouse_callback_func); //callback registration
+	glutMouseFunc(left_mouse_callback_func); // callback registration
+	glutMotionFunc(mouse_motion_callback_func); //callback registration
 	glutDisplayFunc(display); /* display callback invoked when window opened */
 
 	myinit(); /* set attributes */
@@ -172,3 +178,4 @@ void main(int argc, char** argv)
 
 	glutMainLoop(); /* enter event loop */
 }
+
