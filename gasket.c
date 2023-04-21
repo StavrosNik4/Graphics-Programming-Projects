@@ -146,9 +146,19 @@ void menu(int id)
 	}
 }
 
+// create menu and options
+void createMenu() {
+	glutCreateMenu(menu);
+	glutAddMenuEntry("8000 points", 1);
+	glutAddMenuEntry("15000 points and random color", 2);
+	glutAddMenuEntry("pentagon", 3);
+	glutAddMenuEntry("hexagon", 4);
+	glutAddMenuEntry("quit", 5);
+	glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
+}
+
 void main(int argc, char** argv)
 {
-
 	/* Standard GLUT initialization */
 	srand(time(NULL)); // seed the random number generator with current time
 	glutInit(&argc, argv);
@@ -159,18 +169,8 @@ void main(int argc, char** argv)
 	glutMouseFunc(left_mouse_callback_func); // callback registration
 	glutMotionFunc(mouse_motion_callback_func); //callback registration
 	glutDisplayFunc(display); /* display callback invoked when window opened */
-
 	myinit(); /* set attributes */
-
-	// create menu and options
-	glutCreateMenu(menu);
-	glutAddMenuEntry("8000 points", 1);
-	glutAddMenuEntry("15000 points and random color", 2);
-	glutAddMenuEntry("pentagon", 3);
-	glutAddMenuEntry("hexagon", 4);
-	glutAddMenuEntry("quit", 5);
-	glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
-
+	createMenu(); // create menu and options
 	glutMainLoop(); /* enter event loop */
 }
 
