@@ -7,54 +7,79 @@ bool increasing = true;      // whether to increase or decrease the scale factor
 
 float rotate_angle = 0.0f; // initial rotation angle
 const float rotate_axis[] = { 1.0f, 1.0f, 1.0f }; // rotation axis
+const int square = 1;
 
-void drawSquare(float r, float g, float b) {
-    glColor3f(r, g, b); // set the color
+void myinit(void) {
+    glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glNewList(square, GL_COMPILE);
     glBegin(GL_QUADS);
     glVertex3f(-1.0f, -1.0f, 1.0f);
     glVertex3f(1.0f, -1.0f, 1.0f);
     glVertex3f(1.0f, 1.0f, 1.0f);
     glVertex3f(-1.0f, 1.0f, 1.0f);
     glEnd();
+    glEndList();
+
 }
 
-void drawCube() {
-    glScalef(4.0f, 4.0f, 4.0f); // scale the cube to be of size 4
 
+void drawCube() {
+    glPushMatrix();
+
+    //glScalef(4.0f, 4.0f, 4.0f); // scale the cube to be of size 4
+
+    glTranslatef(0.0f, 0.0f, -0.5f);// Apply translation to move the cube's center to the origin
+
+    //glTranslatef(0.0f, 0.0f, 0.5f);// Apply inverse translation to move the cube back to its original position
     // front face
     glPushMatrix();
-    drawSquare(1.0f, 0.0f, 0.0f); // red
+    glColor3f(1.0f, 0.0f, 0.0f); // red
+    glCallList(square);
     glPopMatrix();
 
     // back face
     glPushMatrix();
     glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-    drawSquare(1.0f, 1.0f, 0.0f); // yellow
+    glColor3f(1.0f, 1.0f, 0.0f); // yellow
+    glCallList(square);
     glPopMatrix();
 
     // left face
     glPushMatrix();
     glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
-    drawSquare(0.0f, 1.0f, 0.0f); // green
+    glColor3f(0.0f, 1.0f, 0.0f); // green
+    glCallList(square);
     glPopMatrix();
 
     // right face
     glPushMatrix();
     glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-    drawSquare(0.0f, 1.0f, 1.0f); // cyan
+    glColor3f(0.0f, 1.0f, 1.0f); // cyan
+    glCallList(square);
     glPopMatrix();
 
     // top face
     glPushMatrix();
     glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-    drawSquare(0.0f, 0.0f, 1.0f); // blue
+    glColor3f(0.0f, 0.0f, 1.0f); // blue
+    glCallList(square);
     glPopMatrix();
 
     // bottom face
     glPushMatrix();
     glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-    drawSquare(1.0f, 0.0f, 1.0f); // magenta
+    glColor3f(1.0f, 0.0f, 1.0f); // magenta
+    glCallList(square);
     glPopMatrix();
+
+
+    glPopMatrix();
+
 }
 
 
@@ -74,21 +99,25 @@ void display() {
     glTranslatef(0.0f, 0.0f, -100.0f);
 
     // rotate the cube
-    glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]);
-   
-    glScalef(scaleFactor, scaleFactor, scaleFactor);
+   // glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]);
+
+    glRotatef(rotate_angle, 1.0f, 1.0f, 1.0f);// Apply rotation transformations
+    glScalef(4.0 * scaleFactor, 4.0 * scaleFactor, 4.0 * scaleFactor);
     drawCube();  // call your function to draw the cube
 
     glPopMatrix();
 
-    glutSwapBuffers();
+    glutSwapBuffers();// swap front and back buffers
+    //glFlush(); /* clear buffers */
+
 }
 
 void reshape(int w, int h) {
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0, (GLfloat)w / (GLfloat)h, 1.0, 100.0);
+    glOrtho(-w / 20, w / 20, -h / 20, h / 20, -10.0, 200.0);
+    glMatrixMode(GL_MODELVIEW);
 }
 
 void idle() {
@@ -125,6 +154,9 @@ int main(int argc, char** argv) {
     glutInitWindowSize(500, 500);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Square Display List with Color");
+
+    myinit();
+
     glEnable(GL_DEPTH_TEST);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
