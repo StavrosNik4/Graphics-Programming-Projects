@@ -19,6 +19,7 @@ float radius = 50.0f;
 float objectX = 0.0f;
 float objectY = 0.0f;
 
+int question = 1;
 
 void myinit(void) {
     glEnable(GL_BLEND);
@@ -44,7 +45,7 @@ void drawCube() {
 
     glTranslatef(0.0f, 0.0f, -0.5f);// Apply translation to move the cube's center to the origin
 
-    //glTranslatef(0.0f, 0.0f, 0.5f);// Apply inverse translation to move the cube back to its original position
+    glTranslatef(0.0f, 0.0f, 0.5f);// Apply inverse translation to move the cube back to its original position
     // front face
     glPushMatrix();
     glColor3f(1.0f, 0.0f, 0.0f); // red
@@ -116,7 +117,13 @@ void display() {
     glEnd();
 
     glPushMatrix();
-    glTranslatef(objectX, objectY, -80.0f);
+    
+    if (question == 2) {
+        glTranslatef(objectX, objectY, -80.0f);
+    }
+    else {
+        glTranslatef(0.0, 0.0, -100.0f);
+    }
     
     // rotate the cube
     glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]); // Apply rotation transformations
@@ -173,6 +180,28 @@ void idle() {
     glutPostRedisplay();
 }
 
+// menu callback function
+void menu(int id)
+{
+
+    if (id == 1) {
+        question = 1;
+        glutPostRedisplay();
+    }
+
+    if (id == 2) {
+        question = 2;
+        glutPostRedisplay();
+    }
+}
+
+// create menu and options
+void createMenu() {
+    glutCreateMenu(menu);
+    glutAddMenuEntry("A", 1);
+    glutAddMenuEntry("B", 2);
+    glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
+}
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
@@ -182,6 +211,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("Square Display List with Color");
 
     myinit();
+    createMenu(); // create menu and options
 
     glEnable(GL_DEPTH_TEST);
     glutDisplayFunc(display);
