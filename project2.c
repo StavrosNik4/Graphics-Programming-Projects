@@ -100,8 +100,8 @@ void display() {
 
     // set up camera
     gluLookAt(0.0f, 0.0f, 0.0f,  // camera position
-              0.0f, 0.0f, -1.0f, // point to look at
-              0.0f, 1.0f, 0.0f); // up vector
+        0.0f, 0.0f, -1.0f, // point to look at
+        0.0f, 1.0f, 0.0f); // up vector
 
     // Move the object along the circle
     objectX = radius * cos(angle);
@@ -117,14 +117,14 @@ void display() {
     glEnd();
 
     glPushMatrix();
-    
+
     if (question == 2) {
         glTranslatef(objectX, objectY, -80.0f);
     }
     else {
         glTranslatef(0.0, 0.0, -100.0f);
     }
-    
+
     // rotate the cube
     glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]); // Apply rotation transformations
 
@@ -164,7 +164,7 @@ void idle() {
         }
     }
 
-    rotate_angle += 0.03f; // continuously rotate the cube
+    rotate_angle += 0.3f; // continuously rotate the cube
     if (rotate_angle >= 360.0f) {
         // if rotation completes a full circle, start growing again
         rotate_angle = 0.0f;
@@ -193,6 +193,9 @@ void menu(int id)
         question = 2;
         glutPostRedisplay();
     }
+
+    if (id == 3)
+        exit(0);
 }
 
 // create menu and options
@@ -200,6 +203,7 @@ void createMenu() {
     glutCreateMenu(menu);
     glutAddMenuEntry("A", 1);
     glutAddMenuEntry("B", 2);
+    glutAddMenuEntry("Quit", 3);
     glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
 }
 
