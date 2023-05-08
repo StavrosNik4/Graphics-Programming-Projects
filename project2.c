@@ -28,6 +28,9 @@ void myinit(void) {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+    glOrtho(-100.0, 100.0, -100.0, 100.0, 0.01, 300.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
     glNewList(square, GL_COMPILE);
     glBegin(GL_QUADS);
     glVertex3f(-1.0f, -1.0f, 1.0f);
@@ -141,9 +144,9 @@ void display() {
 void reshape(int w, int h) {
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
     glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+    /*glLoadIdentity();
     glOrtho(-100.0, 100.0, -100.0, 100.0, 0.01, 300.0);
-    glMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_MODELVIEW);*/
 }
 
 void idle() {
@@ -164,14 +167,14 @@ void idle() {
         }
     }
 
-    rotate_angle += 0.3f; // continuously rotate the cube
+    rotate_angle += 2.0f; // continuously rotate the cube
     if (rotate_angle >= 360.0f) {
         // if rotation completes a full circle, start growing again
         rotate_angle = 0.0f;
     }
 
     // Increase the angle to move the object
-    angle += 0.0003f;
+    angle += 2.0f;
     if (angle >= 360.0f)
     {
         angle = 0.0f;
