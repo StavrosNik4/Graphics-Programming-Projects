@@ -4,6 +4,9 @@
 #include <GL/glut.h>
 #include <stdbool.h>
 
+float a = 4;
+float b = 100;
+
 float scaleFactor = 1.0f;      // current scaling factor
 float scaleSpeed = 0.0005f;   // speed at which to scale the cube
 bool increasing = true;      // whether to increase or decrease the scale factor
@@ -103,40 +106,57 @@ void display() {
 
     // set up camera
     gluLookAt(0.0f, 0.0f, 0.0f,  // camera position
-        0.0f, 0.0f, -1.0f, // point to look at
-        0.0f, 1.0f, 0.0f); // up vector
+              0.0f, 0.0f, -1.0f, // point to look at
+              0.0f, 1.0f, 0.0f); // up vector
 
     // Move the object along the circle
     objectX = radius * cos(angle);
     objectY = radius * sin(angle);
 
-    // Draw the circle
-    glBegin(GL_LINE_LOOP);
-    for (int i = 0; i < 360; i++)
-    {
-        float theta = i * PI / 180.0f;
-        glVertex2f(radius * cos(theta), radius * sin(theta));
-    }
-    glEnd();
+    // transformations
 
-    glPushMatrix();
-
-    if (question == 2) {
-        glTranslatef(objectX, objectY, -80.0f);
+    if (question == 2) {    // B1
+        glPushMatrix();
+        glTranslatef(objectX, objectY, (-8.0) * b / 10.0);
+        // rotate the cube
+        glPushMatrix();
+        glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]); // Apply rotation transformations
     }
-    else {
-        glTranslatef(0.0, 0.0, -100.0f);
+    else if (question == 1){    // A
+        glPushMatrix();
+        glTranslatef(0.0, 0.0, -b);
+        // rotate the cube
+        glPushMatrix();
+        glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]); // Apply rotation transformations
     }
-
-    // rotate the cube
-    glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]); // Apply rotation transformations
+    else {  // B2
+        glPushMatrix();
+        glTranslatef(0.0, 0.0, (-8.0) * b / 10.0);
+        glPushMatrix();
+        glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]); // Apply rotation transformations
+        glPushMatrix();
+        glTranslatef(radius, -radius, 0.0);
+    }
 
     // scale the cube
-    glScalef(4.0 * scaleFactor, 4.0 * scaleFactor, 4.0 * scaleFactor);
+    glPushMatrix();
+    glScalef(a * scaleFactor, a * scaleFactor, a * scaleFactor);
 
     // Draw the object
     drawCube();  // call your function to draw the cube
-    glPopMatrix();
+
+    
+    if (question == 1 || question == 2) {
+        glPopMatrix();
+        glPopMatrix();
+        glPopMatrix();
+    }
+    else {
+        glPopMatrix();
+        glPopMatrix();
+        glPopMatrix();
+        glPopMatrix();
+    }
 
     glutSwapBuffers();// swap front and back buffers
 }
@@ -144,9 +164,7 @@ void display() {
 void reshape(int w, int h) {
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
     glMatrixMode(GL_PROJECTION);
-    /*glLoadIdentity();
-    glOrtho(-100.0, 100.0, -100.0, 100.0, 0.01, 300.0);
-    glMatrixMode(GL_MODELVIEW);*/
+
 }
 
 void idle() {
@@ -167,14 +185,14 @@ void idle() {
         }
     }
 
-    rotate_angle += 2.0f; // continuously rotate the cube
+    rotate_angle += 0.03f; // continuously rotate the cube
     if (rotate_angle >= 360.0f) {
         // if rotation completes a full circle, start growing again
         rotate_angle = 0.0f;
     }
 
     // Increase the angle to move the object
-    angle += 2.0f;
+    angle += 0.002f;
     if (angle >= 360.0f)
     {
         angle = 0.0f;
@@ -197,16 +215,23 @@ void menu(int id)
         glutPostRedisplay();
     }
 
-    if (id == 3)
+    if (id == 3) {
+        question = 3;
+        glutPostRedisplay();
+    }
+    
+    if (id == 4) {
         exit(0);
+    }
 }
 
 // create menu and options
 void createMenu() {
     glutCreateMenu(menu);
     glutAddMenuEntry("A", 1);
-    glutAddMenuEntry("B", 2);
-    glutAddMenuEntry("Quit", 3);
+    glutAddMenuEntry("B1", 2);
+    glutAddMenuEntry("B2", 3);
+    glutAddMenuEntry("Quit", 4);
     glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
 }
 
