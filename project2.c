@@ -4,6 +4,8 @@
 #include <GL/glut.h>
 #include <stdbool.h>
 
+// global variables
+
 float a = 4;
 float b = 100;
 
@@ -13,13 +15,13 @@ bool increasing = true;      // whether to increase or decrease the scale factor
 
 float rotate_angle = 0.0f; // initial rotation angle
 const float rotate_axis[] = { 1.0f, 1.0f, 1.0f }; // rotation axis
-const int square = 1;
+const int square = 1;   // Display List id
 
 #define PI 3.1415926535898
 
-float angle = 0.0f;
+float angle = 0.0f; // angle for the B1 rotation
 float radius = 50.0f;
-float objectX = 0.0f;
+float objectX = 0.0f; // cube cordinates for the circle moves
 float objectY = 0.0f;
 
 int question = 1;
@@ -27,13 +29,13 @@ int question = 1;
 void myinit(void) {
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
-
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(-100.0, 100.0, -100.0, 100.0, 0.01, 300.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    // create Display List
     glNewList(square, GL_COMPILE);
     glBegin(GL_QUADS);
     glVertex3f(-1.0f, -1.0f, 1.0f);
@@ -42,16 +44,12 @@ void myinit(void) {
     glVertex3f(-1.0f, 1.0f, 1.0f);
     glEnd();
     glEndList();
-
 }
 
 
 void drawCube() {
     glPushMatrix();
 
-    glTranslatef(0.0f, 0.0f, -0.5f);// Apply translation to move the cube's center to the origin
-
-    glTranslatef(0.0f, 0.0f, 0.5f);// Apply inverse translation to move the cube back to its original position
     // front face
     glPushMatrix();
     glColor3f(1.0f, 0.0f, 0.0f); // red
@@ -93,7 +91,6 @@ void drawCube() {
     glCallList(square);
     glPopMatrix();
 
-
     glPopMatrix();
 
 }
@@ -109,54 +106,37 @@ void display() {
               0.0f, 0.0f, -1.0f, // point to look at
               0.0f, 1.0f, 0.0f); // up vector
 
-    // Move the object along the circle
+    // Cordinates of the object along the circle
     objectX = radius * cos(angle);
     objectY = radius * sin(angle);
 
+    glPushMatrix();
+
     // transformations
 
-    if (question == 2) {    // B1
-        glPushMatrix();
-        glTranslatef(objectX, objectY, (-8.0) * b / 10.0);
-        // rotate the cube
-        glPushMatrix();
-        glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]); // Apply rotation transformations
-    }
-    else if (question == 1){    // A
-        glPushMatrix();
+    if (question == 1) {    // A
         glTranslatef(0.0, 0.0, -b);
         // rotate the cube
-        glPushMatrix();
+        glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]); // Apply rotation transformations
+    }
+    else if (question == 2){    // B1
+        glTranslatef(objectX, objectY, (-8.0) * b / 10.0);
+        // rotate the cube
         glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]); // Apply rotation transformations
     }
     else {  // B2
-        glPushMatrix();
         glTranslatef(0.0, 0.0, (-8.0) * b / 10.0);
-        glPushMatrix();
         glRotatef(rotate_angle, rotate_axis[0], rotate_axis[1], rotate_axis[2]); // Apply rotation transformations
-        glPushMatrix();
-        glTranslatef(radius, -radius, 0.0);
+        glTranslatef(-radius, radius, 0);
     }
 
     // scale the cube
-    glPushMatrix();
     glScalef(a * scaleFactor, a * scaleFactor, a * scaleFactor);
 
     // Draw the object
     drawCube();  // call your function to draw the cube
 
-    
-    if (question == 1 || question == 2) {
-        glPopMatrix();
-        glPopMatrix();
-        glPopMatrix();
-    }
-    else {
-        glPopMatrix();
-        glPopMatrix();
-        glPopMatrix();
-        glPopMatrix();
-    }
+    glPopMatrix();
 
     glutSwapBuffers();// swap front and back buffers
 }
@@ -164,7 +144,6 @@ void display() {
 void reshape(int w, int h) {
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
     glMatrixMode(GL_PROJECTION);
-
 }
 
 void idle() {
@@ -192,7 +171,7 @@ void idle() {
     }
 
     // Increase the angle to move the object
-    angle += 0.002f;
+    angle += 0.0005f;
     if (angle >= 360.0f)
     {
         angle = 0.0f;
@@ -240,11 +219,9 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(500, 500);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Square Display List with Color");
-
+    glutCreateWindow("Stavros_Nikolaidis_3975_Athanasios_Loukas_Patsias_4035");
     myinit();
     createMenu(); // create menu and options
-
     glEnable(GL_DEPTH_TEST);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
