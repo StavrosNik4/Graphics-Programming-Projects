@@ -10,9 +10,66 @@ const int roof = 3;
 float angle = 0.0f;
 float cameraX = 40.0;
 float cameraZ = 20.0;
-float cameraAngleX = 0.0f;
-float cameraAngleY = 2.0f;
-float cameraAngleZ = 0.0f;
+GLfloat light_diffuse[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+GLfloat light_position[] = { -50.0f, 0.0f, 0.0f, 1.0f }; // Will be updated
+GLfloat mat_emission[] = { 1.0f, 1.0f, 0.0f, 1.0f }; // Yellow emission color
+// Global time variable
+float time = 0.0f;
+
+// The speed at which time progresses
+float speed = 0.001f; // Adjust this value to your needs
+
+typedef struct point3 {
+    float x, y, z;
+} point3;
+
+point3 vertices[] = {
+    {0.0, 0.0, 1.0},
+    {0.0, 0.942809, -0.33333},
+    {-0.816497, -0.471405, -0.333333},
+    {0.816497, -0.471405, -0.333333}
+};
+
+void normalize(point3 *p) {
+    double d = sqrt(p->x * p->x + p->y * p->y + p->z * p->z);
+    p->x /= d;
+    p->y /= d;
+    p->z /= d;
+}
+
+point3 midpoint(const point3* a, const point3* b) {
+    point3 result;
+    result.x = (a->x + b->x) / 2.0;
+    result.y = (a->y + b->y) / 2.0;
+    result.z = (a->z + b->z) / 2.0;
+    return result;
+}
+
+void divide_triangle(point3 a, point3 b, point3 c, int m) {
+    if (m > 0) {
+        point3 ab, ac, bc;
+
+        // find midpoints and normalize
+        ab = midpoint(&a, &b); normalize(&ab);
+        ac = midpoint(&a, &c); normalize(&ac);
+        bc = midpoint(&b, &c); normalize(&bc);
+
+        // recurse
+        divide_triangle(a, ab, ac, m - 1);
+        divide_triangle(ab, b, bc, m - 1);
+        divide_triangle(ac, bc, c, m - 1);
+        divide_triangle(ab, bc, ac, m - 1);
+    }
+    else {
+        // draw the triangle
+        glBegin(GL_TRIANGLES);
+        // Face 1
+        glVertex3f(a.x, a.y, a.z);
+        glVertex3f(b.x, b.y, b.z);
+        glVertex3f(c.x, c.y, c.z);
+        glEnd();
+    }
+}
 
 void myInit() {
     glEnable(GL_BLEND);
@@ -76,8 +133,6 @@ void drawHouse() {
     glCallList(roof);
     glPopMatrix();
 
-
-
     // Draw the two triangles to "close" the triangular opening
     glColor3f(1.0, 0.0, 0.0); // red color
     glPushMatrix();
@@ -105,8 +160,27 @@ void drawGrass() {
     glutPostRedisplay();
 }
 
+void drawSun() {
+    glColor3f(1.0f, 1.0f, 0.0f);
+    
+    glPushMatrix();
+
+    glTranslatef(-50.0, 0.0, 0.0);
+
+    // draw tetrahedron
+    divide_triangle(vertices[0], vertices[1], vertices[2], 4);
+    divide_triangle(vertices[3], vertices[2], vertices[1], 4);
+    divide_triangle(vertices[0], vertices[3], vertices[1], 4);
+    divide_triangle(vertices[0], vertices[2], vertices[3], 4);
+
+    glPopMatrix();
+
+    glutPostRedisplay();
+}
+
+
 void moveCamera(int key, int x, int y) {
-    const float rotationSpeed = 0.5f;  // Speed of rotation
+    const float rotationSpeed = 1.0f;  // Speed of rotation
     float radius = sqrt(pow(cameraX,2) + pow(cameraZ, 2));//find radius for rotation around center
 
     switch (key) {
@@ -138,6 +212,9 @@ void display() {
 
     // Draw the grass
     drawGrass();
+
+    // Draw the sun
+    drawSun();
 
     glutSwapBuffers();
 }
@@ -172,7 +249,8 @@ int main(int argc, char** argv) {
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
 
+
     glutMainLoop();
 
     return 0;
-}}
+}
