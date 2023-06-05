@@ -13,6 +13,7 @@ float intensity = 0.0f;
 const int plain = 1;
 const int roof_sides = 2;
 const int roof = 3;
+const int main_build = 4;
 float angle = 0.0f;
 float cameraX = 40.0;
 float cameraZ = 40.0;
@@ -31,6 +32,7 @@ float VertexB[3] = { 0.0f, 0.0f, 0.0f };
 float VertexC[3] = { 0.0f, 0.0f, 0.0f };
 float N[3] = { 0.0f, 0.0f, 0.0f };
 
+int front = 1;
 
 typedef struct point3 {
     float x, y, z;
@@ -112,7 +114,7 @@ void myInit() {
 
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.529f, 0.808f, 0.922f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(-60.0, 60.0, -60.0, 60.0, -200.0, 200.0);
@@ -141,18 +143,25 @@ void myInit() {
     glBegin(GL_TRIANGLES);
 
     // Define the vertices
-    VertexA[0] = -5.0;  VertexA[1] = 0.0;  VertexA[2] = 0.0;
-    VertexB[0] = 0.0; VertexB[1] = 10.0; VertexB[2] = 0.0;
-    VertexC[0] = 5.0; VertexC[1] = 0.0; VertexC[2] = 0.0;
+    if (front == 1) {
+        VertexA[0] = -5.0;  VertexA[1] = 0.0;  VertexA[2] = 0.0;
+        VertexB[0] = 0.0; VertexB[1] = 10.0; VertexB[2] = 0.0;
+        VertexC[0] = 5.0; VertexC[1] = 0.0; VertexC[2] = 0.0;
+    }
+    else {
+        VertexA[0] = 5.0;  VertexA[1] = 0.0;  VertexA[2] = 0.0;
+        VertexB[0] = 0.0; VertexB[1] = 10.0; VertexB[2] = 0.0;
+        VertexC[0] = -5.0; VertexC[1] = 0.0; VertexC[2] = 0.0;
+    }
 
     // Calculate vectors from A to B and from A to C
     float A[3], B[3];
-    calculateVector(VertexA, VertexB, A);
-    calculateVector(VertexA, VertexC, B);
 
     // Calculate the normal
     float N[3];
-    crossProduct(B, A, N);
+    calculateVector(VertexA, VertexB, A);
+    calculateVector(VertexA, VertexC, B);
+    crossProduct(A, B, N);
 
     // Normalize the normal
     normalize(N);
@@ -161,20 +170,22 @@ void myInit() {
     glNormal3f(N[0], N[1], N[2]);
 
     // Define the vertices of the triangle
-    glVertex3f(-5.0, 0.0, 0.0);
-    glVertex3f(0.0, 10.0, 0.0);
-    glVertex3f(5.0, 0.0, 0.0);
+    glVertex3fv(VertexA);
+    glVertex3fv(VertexB);
+    glVertex3fv(VertexC);
 
     glEnd();
     glEndList();
+
+
 
     glNewList(roof, GL_COMPILE);
     glBegin(GL_QUADS);
 
     // Define the vertices
-    VertexA[0] = -5.0;  VertexA[1] = 0.0;  VertexA[2] = 10.0;
-    VertexB[0] = 5.0; VertexB[1] = 0.0; VertexB[2] = 10.0;
-    VertexC[0] = 5.0; VertexC[1] = 0.0; VertexC[2] = -10.0;
+    VertexA[0] = -5.5;  VertexA[1] = 0.0;  VertexA[2] = 10.0;
+    VertexB[0] = 5.5; VertexB[1] = 0.0; VertexB[2] = 10.0;
+    VertexC[0] = 5.5; VertexC[1] = 0.0; VertexC[2] = -10.0;
 
     // Calculate vectors from A to B and from A to C
     calculateVector(VertexA, VertexB, A);
@@ -190,12 +201,66 @@ void myInit() {
     glNormal3f(N[0], N[1], N[2]);
 
     // Define the vertices of the quad
-    glVertex3f(-5.0f, 0.0f, 10.0f);   // Top-left vertex
-    glVertex3f(5.0f, 0.0f, 10.0f);    // Top-right vertex
-    glVertex3f(5.0f, 0.0f, -10.0f);   // Bottom-right vertex
-    glVertex3f(-5.0f, 0.0f, -10.0f);  // Bottom-left vertex
+    glVertex3f(-5.5f, 0.0f, 10.0f);   // Top-left vertex-from 5 to 5.5 to make the foor a bit biger to match the triangles height
+    glVertex3f(5.5f, 0.0f, 10.0f);    // Top-right vertex
+    glVertex3f(5.5f, 0.0f, -10.0f);   // Bottom-right vertex
+    glVertex3f(-5.5f, 0.0f, -10.0f);  // Bottom-left vertex
 
     glEnd();
+    glEndList();
+
+    glNewList(main_build, GL_COMPILE);
+    // Define the cube vertices
+    GLfloat vertices[8][3] = {
+        {-5.0f, -5.0f, 10.0f}, // 0
+        {5.0f, -5.0f, 10.0f},  // 1
+        {5.0f, 5.0f, 10.0f},   // 2
+        {-5.0f, 5.0f, 10.0f},  // 3
+        {-5.0f, -5.0f, -10.0f}, // 4
+        {5.0f, -5.0f, -10.0f},  // 5
+        {5.0f, 5.0f, -10.0f},   // 6
+        {-5.0f, 5.0f, -10.0f}  // 7
+    };
+
+    // Define the cube faces
+    int faces[6][4] = {
+        {0, 3, 2, 1}, // Front
+        {1, 5, 6, 2}, // Right
+        {5, 4, 7, 6}, // Back
+        {4, 0, 3, 7}, // Left
+        {3, 2, 6, 7}, // Top
+        {4, 5, 1, 0}  // Bottom
+    };
+
+
+    glPushMatrix();
+
+    for (int i = 0; i < 6; i++) {
+        // Calculate vectors
+        float A[3], B[3];
+        calculateVector(vertices[faces[i][0]], vertices[faces[i][1]], A);
+        calculateVector(vertices[faces[i][0]], vertices[faces[i][3]], B);
+
+        // Calculate the normal
+        float N[3];
+        if (i != 2) {
+            crossProduct(A, B, N);
+        }
+        else {
+            crossProduct(B, A, N);
+        }
+
+        // Normalize the normal
+        normalize_Vector(N);
+
+        glBegin(GL_QUADS);
+        glNormal3f(N[0], N[1], N[2]);
+        for (int j = 0; j < 4; j++) {
+            glVertex3fv(vertices[faces[i][j]]);
+        }
+        glEnd();
+    }
+    glPopMatrix();
     glEndList();
 
 }
@@ -214,15 +279,13 @@ void drawHouse() {
     GLfloat roof_shininess = 100.0f;
 
     // Set material properties for the main building
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, main_building_diffuse);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, main_building_ambient);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, main_building_specular);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, main_building_shininess);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, main_building_diffuse);
+    glMaterialfv(GL_FRONT, GL_AMBIENT, main_building_ambient);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, main_building_specular);
+    glMaterialf(GL_FRONT, GL_SHININESS, main_building_shininess);
 
-    // Draw the main building (rectangular parallelepiped)
     glPushMatrix();
-    glScalef(10.0, 10.0, 20.0); // Dimensions: 10x10x20
-    glutSolidCube(1.0);
+    glCallList(main_build);
     glPopMatrix();
 
     // Set material properties for the roof
@@ -230,31 +293,36 @@ void drawHouse() {
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, roof_ambient);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, roof_specular);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, roof_shininess);
-
+    
     // Draw the triangular "roof"
     glPushMatrix();
     glTranslatef(-2.3, 10.0, 0.0); // Position the roof above the main building
-    glRotatef(-180.0, 85.0, 50.0, 0.0); // Rotate the roof to make it triangular
+    glRotatef(-180.0, 80.0, 50.0, 0.0); // Rotate the roof to make it triangular --changed angle a bit
     glCallList(roof);
     glPopMatrix();
 
     // Draw the triangular "roof"
     glPushMatrix();
     glTranslatef(2.3, 10.0, 0.0); // Position the roof above the main building
-    glRotatef(-180.0, -85.0, 50.0, 0.0); // Rotate the roof to make it triangular
+    glRotatef(-180.0, -80.0, 50.0, 0.0); // Rotate the roof to make it triangular  --changed angle a bit
     glCallList(roof);
     glPopMatrix();
 
-    // Draw the two triangles to "close" the triangular opening
+    // ABN
+    glPushMatrix();
+    glTranslatef(0.0, 5.0, 10.0); // Position the roof above the main building
+    glCallList(roof_sides);
+    glPopMatrix();
+
+    front = 0;
+
+    // BAN
     glPushMatrix();
     glTranslatef(0.0, 5.0, -10.0); // Position the roof above the main building
     glCallList(roof_sides);
     glPopMatrix();
 
-    glPushMatrix();
-    glTranslatef(0.0, 5.0, 10.0); // Position the roof above the main building
-    glCallList(roof_sides);
-    glPopMatrix();
+    front = 1;
 
     glutPostRedisplay();
 }
