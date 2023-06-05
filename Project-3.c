@@ -2,22 +2,35 @@
 #include <GL/glut.h>
 #include <math.h>
 
+
 # define M_PI  3.14159265358979323846
+
+// Initial sphere position
+float sphere_x = -50.0, sphere_y = 0.0, sphere_z = 0.0;
+float shpere_angle = 0.0f;
+float intensity = 0.0f;
 
 const int plain = 1;
 const int roof_sides = 2;
 const int roof = 3;
 float angle = 0.0f;
 float cameraX = 40.0;
-float cameraZ = 20.0;
-GLfloat light_diffuse[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+float cameraZ = 40.0;
+GLfloat light_diffuse[] = { 0.3f, 0.3f, 0.3f, 1.0f }; // 0.3 .3 .3
 GLfloat light_position[] = { -50.0f, 0.0f, 0.0f, 1.0f }; // Will be updated
 GLfloat mat_emission[] = { 1.0f, 1.0f, 0.0f, 1.0f }; // Yellow emission color
-// Global time variable
-float time = 0.0f;
 
-// The speed at which time progresses
-float speed = 0.001f; // Adjust this value to your needs
+int polygon = 0;
+int smooth = 1;
+
+float A[3] = { 0.0f, 0.0f, 0.0f };
+float B[3] = { 0.0f, 0.0f, 0.0f };
+
+float VertexA[3] = { 0.0f, 0.0f, 0.0f };
+float VertexB[3] = { 0.0f, 0.0f, 0.0f };
+float VertexC[3] = { 0.0f, 0.0f, 0.0f };
+float N[3] = { 0.0f, 0.0f, 0.0f };
+
 
 typedef struct point3 {
     float x, y, z;
@@ -30,7 +43,7 @@ point3 vertices[] = {
     {0.816497, -0.471405, -0.333333}
 };
 
-void normalize(point3 *p) {
+void normalize(point3* p) {
     double d = sqrt(p->x * p->x + p->y * p->y + p->z * p->z);
     p->x /= d;
     p->y /= d;
@@ -71,76 +84,173 @@ void divide_triangle(point3 a, point3 b, point3 c, int m) {
     }
 }
 
+void crossProduct(float A[3], float B[3], float result[3]) {
+    result[0] = A[1] * B[2] - A[2] * B[1];
+    result[1] = A[2] * B[0] - A[0] * B[2];
+    result[2] = A[0] * B[1] - A[1] * B[0];
+}
+
+void calculateVector(float A[3], float B[3], float result[3]) {
+    result[0] = B[0] - A[0];
+    result[1] = B[1] - A[1];
+    result[2] = B[2] - A[2];
+}
+
+void normalize_Vector(float vec[3]) {
+    float length = sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
+    vec[0] /= length;
+    vec[1] /= length;
+    vec[2] /= length;
+}
+
 void myInit() {
+    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHTING);
+
+    //glEnable(GL_NORMALIZE);
+    //glEnable(GL_NORMALIZE);
+
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.529f, 0.808f, 0.922f, 1.0f);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-30.0, 30.0, -30.0, 30.0, -190.0, 150.0);
+    glOrtho(-60.0, 60.0, -60.0, 60.0, -200.0, 200.0);
     glMatrixMode(GL_MODELVIEW);
 
     glLoadIdentity();
 
     glNewList(plain, GL_COMPILE);
-        glBegin(GL_QUADS);
-        glVertex3f(-50.0, 0.0, -50.0);
-        glVertex3f(50.0, 0.0, -50.0);
-        glVertex3f(50.0, 0.0, 50.0);
-        glVertex3f(-50.0, 0.0, 50.0);
-        glEnd();
+    glBegin(GL_QUADS);
+    VertexA[0] = -40.0;  VertexA[1] = 0.0;  VertexA[2] = -40.0;
+    VertexB[0] = 40.0; VertexB[1] = 0.0; VertexB[2] = -40.0;
+    VertexC[0] = 40.0; VertexC[1] = 0.0; VertexC[2] = 40.0;
+    calculateVector(VertexA, VertexB, A);
+    calculateVector(VertexA, VertexC, B);
+    crossProduct(B, A, N);
+    normalize_Vector(N); // Add this line
+    glNormal3f(N[0], N[1], N[2]);
+    glVertex3f(-40.0, 0.0, -40.0);
+    glVertex3f(40.0, 0.0, -40.0);
+    glVertex3f(40.0, 0.0, 40.0);
+    glVertex3f(-40.0, 0.0, 40.0);
+    glEnd();
     glEndList();
 
     glNewList(roof_sides, GL_COMPILE);
-        glBegin(GL_TRIANGLES);
-        glVertex3f(-5.0, 0.0, 0.0);
-        glVertex3f(0.0, 10.0, 0.0);
-        glVertex3f(5.0, 0.0, 0.0);
-        glEnd();
-   glEndList();
+    glBegin(GL_TRIANGLES);
 
-   glNewList(roof, GL_COMPILE);
-       glBegin(GL_QUADS);
-           glVertex3f(-5.0f, 0.0f, 10.0f);   // Top-left vertex
-           glVertex3f(5.0f, 0.0f, 10.0f);    // Top-right vertex
-           glVertex3f(5.0f, 0.0f, -10.0f);   // Bottom-right vertex
-           glVertex3f(-5.0f, 0.0f, -10.0f);  // Bottom-left vertex
-       glEnd();
-   glEndList();
+    // Define the vertices
+    VertexA[0] = -5.0;  VertexA[1] = 0.0;  VertexA[2] = 0.0;
+    VertexB[0] = 0.0; VertexB[1] = 10.0; VertexB[2] = 0.0;
+    VertexC[0] = 5.0; VertexC[1] = 0.0; VertexC[2] = 0.0;
+
+    // Calculate vectors from A to B and from A to C
+    float A[3], B[3];
+    calculateVector(VertexA, VertexB, A);
+    calculateVector(VertexA, VertexC, B);
+
+    // Calculate the normal
+    float N[3];
+    crossProduct(B, A, N);
+
+    // Normalize the normal
+    normalize(N);
+
+    // Set the normal
+    glNormal3f(N[0], N[1], N[2]);
+
+    // Define the vertices of the triangle
+    glVertex3f(-5.0, 0.0, 0.0);
+    glVertex3f(0.0, 10.0, 0.0);
+    glVertex3f(5.0, 0.0, 0.0);
+
+    glEnd();
+    glEndList();
+
+    glNewList(roof, GL_COMPILE);
+    glBegin(GL_QUADS);
+
+    // Define the vertices
+    VertexA[0] = -5.0;  VertexA[1] = 0.0;  VertexA[2] = 10.0;
+    VertexB[0] = 5.0; VertexB[1] = 0.0; VertexB[2] = 10.0;
+    VertexC[0] = 5.0; VertexC[1] = 0.0; VertexC[2] = -10.0;
+
+    // Calculate vectors from A to B and from A to C
+    calculateVector(VertexA, VertexB, A);
+    calculateVector(VertexA, VertexC, B);
+
+    // Calculate the normal
+    crossProduct(B, A, N);
+
+    // Normalize the normal
+    normalize(N);
+
+    // Set the normal
+    glNormal3f(N[0], N[1], N[2]);
+
+    // Define the vertices of the quad
+    glVertex3f(-5.0f, 0.0f, 10.0f);   // Top-left vertex
+    glVertex3f(5.0f, 0.0f, 10.0f);    // Top-right vertex
+    glVertex3f(5.0f, 0.0f, -10.0f);   // Bottom-right vertex
+    glVertex3f(-5.0f, 0.0f, -10.0f);  // Bottom-left vertex
+
+    glEnd();
+    glEndList();
+
 }
-   
+
 void drawHouse() {
+    // Set material properties for the main building (matte surface)
+    GLfloat main_building_diffuse[] = { 0.941f, 0.0f, 0.0f, 1.0f }; // Arctic white color
+    GLfloat main_building_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    GLfloat main_building_specular[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    GLfloat main_building_shininess = 0.0f;
+
+    // Set material properties for the roof (metallic surface)
+    GLfloat roof_diffuse[] = { 0.329412f, 0.329412f, 0.329412f, 1.0f }; // Grey color
+    GLfloat roof_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    GLfloat roof_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // White specular highlights
+    GLfloat roof_shininess = 100.0f;
+
+    // Set material properties for the main building
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, main_building_diffuse);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, main_building_ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, main_building_specular);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, main_building_shininess);
+
     // Draw the main building (rectangular parallelepiped)
-    glColor3f(0.329412, 0.329412, 0.329412); // arctic white color
     glPushMatrix();
     glScalef(10.0, 10.0, 20.0); // Dimensions: 10x10x20
     glutSolidCube(1.0);
     glPopMatrix();
 
+    // Set material properties for the roof
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, roof_diffuse);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, roof_ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, roof_specular);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, roof_shininess);
+
     // Draw the triangular "roof"
-    glColor3f(1.0 ,0.0 ,0.0); // red color
     glPushMatrix();
-    glTranslatef(-2.5, 10.0, 0.0); // Position the roof above the main building
-    glRotatef(-180.0,80.0, 50.0, 0.0); // Rotate the roof to make it triangular
+    glTranslatef(-2.3, 10.0, 0.0); // Position the roof above the main building
+    glRotatef(-180.0, 85.0, 50.0, 0.0); // Rotate the roof to make it triangular
     glCallList(roof);
     glPopMatrix();
 
     // Draw the triangular "roof"
-    glColor3f(1.0, 0.0, 0.0); // red color
     glPushMatrix();
-    glTranslatef(2.5, 10.0, 0.0); // Position the roof above the main building
-    glRotatef(-180.0, -80.0, 50.0, 0.0); // Rotate the roof to make it triangular
+    glTranslatef(2.3, 10.0, 0.0); // Position the roof above the main building
+    glRotatef(-180.0, -85.0, 50.0, 0.0); // Rotate the roof to make it triangular
     glCallList(roof);
     glPopMatrix();
 
     // Draw the two triangles to "close" the triangular opening
-    glColor3f(1.0, 0.0, 0.0); // red color
     glPushMatrix();
     glTranslatef(0.0, 5.0, -10.0); // Position the roof above the main building
     glCallList(roof_sides);
     glPopMatrix();
 
-    glColor3f(1.0 ,0.0 ,0.0); // red color
     glPushMatrix();
     glTranslatef(0.0, 5.0, 10.0); // Position the roof above the main building
     glCallList(roof_sides);
@@ -150,28 +260,67 @@ void drawHouse() {
 }
 
 void drawGrass() {
+    GLfloat mat_ambient[] = { 0.0, 1.0, 0.0, 1.0 }; // Green
+    GLfloat mat_diffuse[] = { 0.0, 1.0, 0.0, 1.0 }; // Green
+    GLfloat mat_specular[] = { 0.0, 0.0, 0.0, 1.0 }; // No specular reflection
+    GLfloat mat_shininess[] = { 0.0 }; // No shininess
 
-    glColor3f(0.0, 0.5, 0.0); // dark Green color
-    glPushMatrix();
-    glTranslatef(0.0, -10.0, 0.0);
-    glCallList(plain);
-    glPopMatrix();
-    
+    // Set material properties
+    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+    if (polygon == 0) {
+        glPushMatrix();
+        glTranslatef(0.0, -10.0, 0.0);
+        glCallList(plain);
+        glPopMatrix();
+    }
+    else {
+        // Draw 100 smaller polygons on the y = -10 plane
+        for (int i = -5; i < 5; i++) {
+            for (int j = -5; j < 5; j++) {
+                float x = i * 10.0f;
+                float z = j * 10.0f;
+
+                glBegin(GL_QUADS);
+                glVertex3f(x, -10.0f, z);
+                glVertex3f(x + 10.0f, -10.0f, z);
+                glVertex3f(x + 10.0f, -10.0f, z + 10.0f);
+                glVertex3f(x, -10.0f, z + 10.0f);
+                glEnd();
+            }
+        }
+    }
     glutPostRedisplay();
 }
 
 void drawSun() {
-    glColor3f(1.0f, 1.0f, 0.0f);
-    
+
     glPushMatrix();
 
-    glTranslatef(-50.0, 0.0, 0.0);
+    glTranslatef(sphere_x, sphere_y, sphere_z);
+
+    // Set material properties for the sphere (emissive yellow surface)
+    GLfloat sphere_emission[] = { 1.0f, 1.0f, 0.0f, 1.0f }; // Yellow color
+    GLfloat sphere_zero[] = { 0.0f, 0.0f, 0.0f, 1.0f }; // Zero reflection
+
+    // Set material properties for the sphere
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, sphere_zero);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, sphere_zero);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, sphere_zero);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, sphere_emission);
 
     // draw tetrahedron
     divide_triangle(vertices[0], vertices[1], vertices[2], 4);
     divide_triangle(vertices[3], vertices[2], vertices[1], 4);
     divide_triangle(vertices[0], vertices[3], vertices[1], 4);
     divide_triangle(vertices[0], vertices[2], vertices[3], 4);
+
+    // Reset emission color after drawing the sun
+    GLfloat no_emission[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, no_emission);
 
     glPopMatrix();
 
@@ -180,8 +329,8 @@ void drawSun() {
 
 
 void moveCamera(int key, int x, int y) {
-    const float rotationSpeed = 1.0f;  // Speed of rotation
-    float radius = sqrt(pow(cameraX,2) + pow(cameraZ, 2));//find radius for rotation around center
+    const float rotationSpeed = 2.0f;  // Speed of rotation
+    float radius = 70.0;//find radius for rotation around center
 
     switch (key) {
     case GLUT_KEY_RIGHT:
@@ -195,7 +344,7 @@ void moveCamera(int key, int x, int y) {
         cameraZ = radius * cos(angle * M_PI / 180.0);
         break;
     }
-    
+
     glutPostRedisplay();  // Request a redraw of the scene
 }
 
@@ -203,18 +352,25 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     // Set the camera position
-    gluLookAt(cameraX, 15.0, cameraZ,  // camera position
+    gluLookAt(cameraX, 40.0, cameraZ,  // camera position
         0.0f, 0.0f, 0.0f, // point to look at
-        0.0f, 1.0f, 0.0f); // up vector
+        0.0f, 1.0f, 0.0f); // up 
 
-    // Draw the house
-    drawHouse();
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 
     // Draw the grass
     drawGrass();
 
+    // Draw the house
+    drawHouse();
+
     // Draw the sun
     drawSun();
+
+    if(smooth == 1)
+        glShadeModel(GL_SMOOTH);  // Enable smooth shading
+    else
+        glShadeModel(GL_FLAT);  // Enable smooth shading
 
     glutSwapBuffers();
 }
@@ -223,17 +379,86 @@ void reshape(int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void menu(int id)
-{
-    if (id == 4) {
+// Callback function for menu
+void processMenu(int option) {
+    if (option == 5) {
         exit(0);
     }
 }
-void createMenu() {
-    glutCreateMenu(menu);
-   
-    glutAddMenuEntry("Quit", 4);
-    glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
+
+// Callback function for submenu
+void processSubMenu(int option) {
+    // switch case for different options
+    switch (option) {
+    case 1:
+        polygon = 0;
+        break;
+    case 2:
+        polygon = 1;
+        break;
+    case 3:
+        smooth = 0;
+        break;
+    case 4:
+        smooth = 1;
+        break;
+    }
+    glutPostRedisplay();
+}
+
+void createGLUTMenus() {
+    // Create submenu
+    int PolygonsubMenu = glutCreateMenu(processSubMenu);
+    glutAddMenuEntry("Low", 1);
+    glutAddMenuEntry("High", 2);
+
+    // Create submenu
+    int shadesubMenu = glutCreateMenu(processSubMenu);
+    glutAddMenuEntry("Flat", 3);
+    glutAddMenuEntry("Smooth", 4);
+
+    // Create main menu
+    int mainMenu = glutCreateMenu(processMenu);
+    glutAddSubMenu("Polygon", PolygonsubMenu);
+    glutAddSubMenu("Shade", shadesubMenu);
+    glutAddMenuEntry("Quit", 5);
+
+    // Attach the menu to the right mouse button
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+void idle() {
+    // Calculate the new position of the sphere
+    shpere_angle += 0.0005f;
+
+    sphere_x = 50.0f * cos(shpere_angle);
+    sphere_y = 50.0f * sin(shpere_angle);
+
+    light_position[0] = sphere_x;
+    light_position[1] = sphere_y;
+
+    float light_direction[3] = { -sphere_x, -sphere_y, -0.0f };
+
+    // When the sphere reaches the other end, reset angle
+    if (shpere_angle > M_PI) {
+        shpere_angle = 0.0f;
+    }
+    
+
+    // Update the diffuse light intensity based on the time
+    float intensity = 0.3f + 0.7f * sin(shpere_angle);
+    light_diffuse[0] = intensity;
+    light_diffuse[1] = intensity;
+    light_diffuse[2] = intensity;
+
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
+    
+
+    // Redisplay
+    glutPostRedisplay();
 }
 
 int main(int argc, char** argv) {
@@ -241,13 +466,15 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(500, 500);
     glutCreateWindow("Project-3");
+    glEnable(GL_DEPTH_TEST);
 
     myInit();
-    createMenu(); // create menu and options
+    createGLUTMenus(); // create menu and options
 
     glutSpecialFunc(moveCamera);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
+    glutIdleFunc(idle);
 
 
     glutMainLoop();
