@@ -349,10 +349,21 @@ void drawGrass() {
         // Draw 100 smaller polygons on the y = -10 plane
         for (int i = -5; i < 5; i++) {
             for (int j = -5; j < 5; j++) {
-                float x = i * 10.0f;
-                float z = j * 10.0f;
+                float x = i * 8.0f;
+                float z = j * 8.0f;
+
+                float VertexA[3] = { x, -10.0f, z };
+                float VertexB[3] = { x + 10.0f, -10.0f, z };
+                float VertexC[3] = { x + 10.0f, -10.0f, z + 10.0f };
+                float A[3], B[3];
+                calculateVector(VertexA, VertexB, A);
+                calculateVector(VertexA, VertexC, B);
+                float N[3];
+                crossProduct(B, A, N);
+                normalize(N); // Add this line
 
                 glBegin(GL_QUADS);
+                glNormal3f(N[0], N[1], N[2]); // Set the normal for lighting calculations
                 glVertex3f(x, -10.0f, z);
                 glVertex3f(x + 10.0f, -10.0f, z);
                 glVertex3f(x + 10.0f, -10.0f, z + 10.0f);
