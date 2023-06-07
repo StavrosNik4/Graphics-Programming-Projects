@@ -106,7 +106,8 @@ void normalize_Vector(float vec[3]) {
 }
 
 void myInit() {
-    glEnable(GL_LIGHT0);
+    //glEnable(GL_LIGHT0);
+    //glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
 
     //glEnable(GL_NORMALIZE);
@@ -450,6 +451,21 @@ void display() {
         glShadeModel(GL_SMOOTH);  // Enable smooth shading
     else
         glShadeModel(GL_FLAT);  // Enable smooth shading
+
+    // Setup light
+    GLfloat spotlightPosition[] = { 0.0, 3.0, 30.0, 1.0 }; // Position at the corner of the house
+    GLfloat spotlightDirection[] = { 0.0, 1.0, 0.0 }; // Pointing down
+    GLfloat whiteLight[] = { 1.0, 1.0, 0.0, 1.0 }; // yellow light
+
+    glEnable(GL_LIGHT1);
+    glLightfv(GL_LIGHT1, GL_POSITION, spotlightPosition);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, whiteLight);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, whiteLight);
+
+    // Setting spotlight parameters
+    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 30.0f); // Cutoff angle
+    glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection); // Direction of the light
+    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 0.0); // Sharpness of the spotlight edge
 
     glutSwapBuffers();
 }
