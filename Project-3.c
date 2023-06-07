@@ -21,8 +21,9 @@ GLfloat light_diffuse[] = { 0.3f, 0.3f, 0.3f, 1.0f }; // 0.3 .3 .3
 GLfloat light_position[] = { -50.0f, 0.0f, 0.0f, 1.0f }; // Will be updated
 GLfloat mat_emission[] = { 1.0f, 1.0f, 0.0f, 1.0f }; // Yellow emission color
 
-int polygon = 0;
+int polygon = 1;
 int smooth = 1;
+int spotlight_trigger = 1;
 
 float A[3] = { 0.0f, 0.0f, 0.0f };
 float B[3] = { 0.0f, 0.0f, 0.0f };
@@ -31,6 +32,7 @@ float VertexA[3] = { 0.0f, 0.0f, 0.0f };
 float VertexB[3] = { 0.0f, 0.0f, 0.0f };
 float VertexC[3] = { 0.0f, 0.0f, 0.0f };
 float N[3] = { 0.0f, 0.0f, 0.0f };
+float N_backup[3] = { 0.0f, 0.0f, 0.0f };
 
 int front = 1;
 
@@ -106,9 +108,11 @@ void normalize_Vector(float vec[3]) {
 }
 
 void myInit() {
-    //glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT0);
     //glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
+
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 
     //glEnable(GL_NORMALIZE);
     //glEnable(GL_NORMALIZE);
@@ -125,18 +129,21 @@ void myInit() {
 
     glNewList(plain, GL_COMPILE);
     glBegin(GL_QUADS);
-    VertexA[0] = -40.0;  VertexA[1] = 0.0;  VertexA[2] = -40.0;
-    VertexB[0] = 40.0; VertexB[1] = 0.0; VertexB[2] = -40.0;
-    VertexC[0] = 40.0; VertexC[1] = 0.0; VertexC[2] = 40.0;
+    VertexA[0] = -50.0;  VertexA[1] = 0.0;  VertexA[2] = -50.0;
+    VertexB[0] = 50.0; VertexB[1] = 0.0; VertexB[2] = -50.0;
+    VertexC[0] = 50.0; VertexC[1] = 0.0; VertexC[2] = 50.0;
     calculateVector(VertexA, VertexB, A);
     calculateVector(VertexA, VertexC, B);
     crossProduct(B, A, N);
     normalize_Vector(N); // Add this line
+    N_backup[0] = N[0];
+    N_backup[1] = N[1];
+    N_backup[2] = N[2];
     glNormal3f(N[0], N[1], N[2]);
-    glVertex3f(-40.0, 0.0, -40.0);
-    glVertex3f(40.0, 0.0, -40.0);
-    glVertex3f(40.0, 0.0, 40.0);
-    glVertex3f(-40.0, 0.0, 40.0);
+    glVertex3f(-50.0, 0.0, -50.0);
+    glVertex3f(50.0, 0.0, -50.0);
+    glVertex3f(50.0, 0.0, 50.0);
+    glVertex3f(-50.0, 0.0, 50.0);
     glEnd();
     glEndList();
 
@@ -177,8 +184,6 @@ void myInit() {
 
     glEnd();
     glEndList();
-
-
 
     glNewList(roof, GL_COMPILE);
     glBegin(GL_QUADS);
@@ -294,7 +299,7 @@ void drawHouse() {
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, roof_ambient);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, roof_specular);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, roof_shininess);
-    
+
     // Draw the triangular "roof"
     glPushMatrix();
     glTranslatef(-2.3, 10.0, 0.0); // Position the roof above the main building
@@ -347,24 +352,15 @@ void drawGrass() {
         glPopMatrix();
     }
     else {
+        glNormal3f(N[0], N[1], N[2]); // Set the normal for lighting calculations
         // Draw 100 smaller polygons on the y = -10 plane
         for (int i = -5; i < 5; i++) {
             for (int j = -5; j < 5; j++) {
-                float x = i * 8.0f;
-                float z = j * 8.0f;
-
-                float VertexA[3] = { x, -10.0f, z };
-                float VertexB[3] = { x + 10.0f, -10.0f, z };
-                float VertexC[3] = { x + 10.0f, -10.0f, z + 10.0f };
-                float A[3], B[3];
-                calculateVector(VertexA, VertexB, A);
-                calculateVector(VertexA, VertexC, B);
-                float N[3];
-                crossProduct(B, A, N);
-                normalize(N); // Add this line
+                float x = i * 10.0f;
+                float z = j * 10.0f;
 
                 glBegin(GL_QUADS);
-                glNormal3f(N[0], N[1], N[2]); // Set the normal for lighting calculations
+                
                 glVertex3f(x, -10.0f, z);
                 glVertex3f(x + 10.0f, -10.0f, z);
                 glVertex3f(x + 10.0f, -10.0f, z + 10.0f);
@@ -434,9 +430,7 @@ void display() {
     // Set the camera position
     gluLookAt(cameraX, 40.0, cameraZ,  // camera position
         0.0f, 0.0f, 0.0f, // point to look at
-        0.0f, 1.0f, 0.0f); // up 
-
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+        0.0f, 1.0f, 0.0f); // up
 
     // Draw the grass
     drawGrass();
@@ -447,25 +441,28 @@ void display() {
     // Draw the sun
     drawSun();
 
-    if(smooth == 1)
+    if (smooth == 1)
         glShadeModel(GL_SMOOTH);  // Enable smooth shading
     else
         glShadeModel(GL_FLAT);  // Enable smooth shading
 
-    // Setup light
-    GLfloat spotlightPosition[] = { 0.0, 3.0, 30.0, 1.0 }; // Position at the corner of the house
-    GLfloat spotlightDirection[] = { 0.0, 1.0, 0.0 }; // Pointing down
-    GLfloat whiteLight[] = { 1.0, 1.0, 0.0, 1.0 }; // yellow light
+    if (spotlight_trigger == 1) {
+        // Setup light
+        GLfloat spotlightPosition[] = { 0.0, 15.0, 20.0, 1.0 }; // Position at the corner of the house
+        GLfloat spotlightDirection[] = { 0.0, -1.0, 0.3 }; // Pointing down
+        GLfloat yellowLight[] = { 1.0, 1.0, 0.0, 1.0 }; // yellow light
 
-    glEnable(GL_LIGHT1);
-    glLightfv(GL_LIGHT1, GL_POSITION, spotlightPosition);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, whiteLight);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, whiteLight);
+        glEnable(GL_LIGHT1);
+        glLightfv(GL_LIGHT1, GL_POSITION, spotlightPosition);
+        glLightfv(GL_LIGHT1, GL_AMBIENT, yellowLight);
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, yellowLight);
+        glLightfv(GL_LIGHT1, GL_SPECULAR, yellowLight);
 
-    // Setting spotlight parameters
-    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 30.0f); // Cutoff angle
-    glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection); // Direction of the light
-    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 0.0); // Sharpness of the spotlight edge
+        // Setting spotlight parameters
+        glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 30.0f); // Cutoff angle
+        glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection); // Direction of the light
+        glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 0.0); // Sharpness of the spotlight edge
+    }
 
     glutSwapBuffers();
 }
@@ -476,7 +473,7 @@ void reshape(int width, int height) {
 
 // Callback function for menu
 void processMenu(int option) {
-    if (option == 5) {
+    if (option == 7) {
         exit(0);
     }
 }
@@ -497,6 +494,12 @@ void processSubMenu(int option) {
     case 4:
         smooth = 1;
         break;
+    case 5:
+        spotlight_trigger = 1;
+        break;
+    case 6:
+        spotlight_trigger = 0;
+        break;
     }
     glutPostRedisplay();
 }
@@ -512,11 +515,17 @@ void createGLUTMenus() {
     glutAddMenuEntry("Flat", 3);
     glutAddMenuEntry("Smooth", 4);
 
+    // Create submenu
+    int spotlightsubMenu = glutCreateMenu(processSubMenu);
+    glutAddMenuEntry("On", 5);
+    glutAddMenuEntry("Off", 6);
+
     // Create main menu
     int mainMenu = glutCreateMenu(processMenu);
     glutAddSubMenu("Polygon", PolygonsubMenu);
     glutAddSubMenu("Shade", shadesubMenu);
-    glutAddMenuEntry("Quit", 5);
+    glutAddSubMenu("Spotlight", spotlightsubMenu);
+    glutAddMenuEntry("Quit", 7);
 
     // Attach the menu to the right mouse button
     glutAttachMenu(GLUT_RIGHT_BUTTON);
@@ -538,7 +547,7 @@ void idle() {
     if (shpere_angle > M_PI) {
         shpere_angle = 0.0f;
     }
-    
+
 
     // Update the diffuse light intensity based on the time
     float intensity = 0.3f + 0.7f * sin(shpere_angle);
@@ -550,7 +559,7 @@ void idle() {
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_diffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
-    
+
 
     // Redisplay
     glutPostRedisplay();
