@@ -12,6 +12,7 @@ float intensity = 0.0f;
 
 const int plain = 1;
 const int roof_sides = 2;
+const int roof_sides_2 = 5;
 const int roof = 3;
 const int main_build = 4;
 float angle = 0.0f;
@@ -31,6 +32,11 @@ float B[3] = { 0.0f, 0.0f, 0.0f };
 float VertexA[3] = { 0.0f, 0.0f, 0.0f };
 float VertexB[3] = { 0.0f, 0.0f, 0.0f };
 float VertexC[3] = { 0.0f, 0.0f, 0.0f };
+
+float VertexA_roof_slide[3] = { -5.0f, 0.0f, 0.0f };
+float VertexB_roof_slide[3] = { 0.0f, 10.0f, 0.0f };
+float VertexC_roof_slide[3] = { 5.0f, 0.0f, 0.0f };
+
 float N[3] = { 0.0f, 0.0f, 0.0f };
 float N_backup[3] = { 0.0f, 0.0f, 0.0f };
 
@@ -109,13 +115,9 @@ void normalize_Vector(float vec[3]) {
 
 void myInit() {
     glEnable(GL_LIGHT0);
-    //glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
 
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-
-    //glEnable(GL_NORMALIZE);
-    //glEnable(GL_NORMALIZE);
 
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
@@ -150,40 +152,56 @@ void myInit() {
     glNewList(roof_sides, GL_COMPILE);
     glBegin(GL_TRIANGLES);
 
-    // Define the vertices
-    if (front == 1) {
-        VertexA[0] = -5.0;  VertexA[1] = 0.0;  VertexA[2] = 0.0;
-        VertexB[0] = 0.0; VertexB[1] = 10.0; VertexB[2] = 0.0;
-        VertexC[0] = 5.0; VertexC[1] = 0.0; VertexC[2] = 0.0;
-    }
-    else {
-        VertexA[0] = 5.0;  VertexA[1] = 0.0;  VertexA[2] = 0.0;
-        VertexB[0] = 0.0; VertexB[1] = 10.0; VertexB[2] = 0.0;
-        VertexC[0] = -5.0; VertexC[1] = 0.0; VertexC[2] = 0.0;
-    }
-
     // Calculate vectors from A to B and from A to C
     float A[3], B[3];
 
     // Calculate the normal
     float N[3];
-    calculateVector(VertexA, VertexB, A);
-    calculateVector(VertexA, VertexC, B);
+
+    calculateVector(VertexA_roof_slide, VertexB_roof_slide, A);
+    calculateVector(VertexA_roof_slide, VertexC_roof_slide, B);
+    
+    // Set the normal
+    crossProduct(B, A, N);
+
+    // Normalize the normal
+    normalize(N);
+    
+    glNormal3f(N[0], N[1], N[2]);
+
+    // Define the vertices of the triangle
+    glVertex3fv(VertexA_roof_slide);
+    glVertex3fv(VertexB_roof_slide);
+    glVertex3fv(VertexC_roof_slide);
+
+    glEnd();
+    glEndList();
+
+
+    glNewList(roof_sides_2, GL_COMPILE);
+    glBegin(GL_TRIANGLES);
+
+    // Calculate vectors from A to B and from A to C
+
+    calculateVector(VertexA_roof_slide, VertexB_roof_slide, A);
+    calculateVector(VertexA_roof_slide, VertexC_roof_slide, B);
+
+    // Calculate the normal
     crossProduct(A, B, N);
 
     // Normalize the normal
     normalize(N);
 
-    // Set the normal
     glNormal3f(N[0], N[1], N[2]);
 
     // Define the vertices of the triangle
-    glVertex3fv(VertexA);
-    glVertex3fv(VertexB);
-    glVertex3fv(VertexC);
+    glVertex3fv(VertexA_roof_slide);
+    glVertex3fv(VertexB_roof_slide);
+    glVertex3fv(VertexC_roof_slide);
 
     glEnd();
     glEndList();
+
 
     glNewList(roof, GL_COMPILE);
     glBegin(GL_QUADS);
@@ -315,21 +333,15 @@ void drawHouse() {
     glCallList(roof);
     glPopMatrix();
 
-    // ABN
-    glPushMatrix();
-    glTranslatef(0.0, 0.0, 10.0); // Position the roof above the main building
-    glCallList(roof_sides);
-    glPopMatrix();
-
-    front = 0;
-
-    // BAN
     glPushMatrix();
     glTranslatef(0.0, 0.0, -10.0); // Position the roof above the main building
     glCallList(roof_sides);
     glPopMatrix();
 
-    front = 1;
+    glPushMatrix();
+    glTranslatef(0.0, 0.0, 10.0); // Position the roof above the main building
+    glCallList(roof_sides_2);
+    glPopMatrix();
 
     glutPostRedisplay();
 }
