@@ -291,6 +291,7 @@ void drawHouse() {
     glMaterialf(GL_FRONT, GL_SHININESS, main_building_shininess);
 
     glPushMatrix();
+    glTranslatef(0.0f, -5.0f, 0.0f);
     glCallList(main_build);
     glPopMatrix();
 
@@ -302,21 +303,21 @@ void drawHouse() {
 
     // Draw the triangular "roof"
     glPushMatrix();
-    glTranslatef(-2.3, 10.0, 0.0); // Position the roof above the main building
+    glTranslatef(-2.3, 5.0, 0.0); // Position the roof above the main building
     glRotatef(-180.0, 80.0, 50.0, 0.0); // Rotate the roof to make it triangular --changed angle a bit
     glCallList(roof);
     glPopMatrix();
 
     // Draw the triangular "roof"
     glPushMatrix();
-    glTranslatef(2.3, 10.0, 0.0); // Position the roof above the main building
+    glTranslatef(2.3, 5.0, 0.0); // Position the roof above the main building
     glRotatef(-180.0, -80.0, 50.0, 0.0); // Rotate the roof to make it triangular  --changed angle a bit
     glCallList(roof);
     glPopMatrix();
 
     // ABN
     glPushMatrix();
-    glTranslatef(0.0, 5.0, 10.0); // Position the roof above the main building
+    glTranslatef(0.0, 0.0, 10.0); // Position the roof above the main building
     glCallList(roof_sides);
     glPopMatrix();
 
@@ -324,7 +325,7 @@ void drawHouse() {
 
     // BAN
     glPushMatrix();
-    glTranslatef(0.0, 5.0, -10.0); // Position the roof above the main building
+    glTranslatef(0.0, 0.0, -10.0); // Position the roof above the main building
     glCallList(roof_sides);
     glPopMatrix();
 
@@ -360,7 +361,7 @@ void drawGrass() {
                 float z = j * 10.0f;
 
                 glBegin(GL_QUADS);
-                
+
                 glVertex3f(x, -10.0f, z);
                 glVertex3f(x + 10.0f, -10.0f, z);
                 glVertex3f(x + 10.0f, -10.0f, z + 10.0f);
@@ -462,6 +463,9 @@ void display() {
         glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 30.0f); // Cutoff angle
         glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection); // Direction of the light
         glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 0.0); // Sharpness of the spotlight edge
+    }
+    else {
+        glDisable(GL_LIGHT1);
     }
 
     glutSwapBuffers();
