@@ -48,7 +48,7 @@ float distance(float x1, float y1, float x2, float y2) {
     return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-void drawCurveQuestion1() {
+void drawCurveQuestion1or3() {
     if (drawEnabled) {
         // Draw the first curve
         glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &controlPoints[0][0]);
@@ -86,18 +86,6 @@ void drawCurveQuestion2() {
         controlPoints[6][0] = controlPoints[0][0];
         controlPoints[6][1] = controlPoints[0][1];
         controlPoints[6][2] = controlPoints[0][2];
-
-        /*
-        // Σχεδίαση της καμπύλης Bezier
-        glEnable(GL_MAP1_VERTEX_3);
-        glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 7, &controlPoints[0][0]);
-
-        glBegin(GL_LINE_STRIP);
-        for (int i = 0; i <= 30; i++) {
-            glEvalCoord1f((GLfloat)i / 30.0);
-        }
-        glEnd();
-        */
 
         glColor3f(0.0, 1.0, 0.0);
         glBegin(GL_LINE_STRIP);
@@ -143,7 +131,7 @@ void display() {
     glColor3f(0.0, 1.0, 0.0);
 
     if (question == 1) {
-        drawCurveQuestion1();
+        drawCurveQuestion1or3();
     }
 
     if (question == 2) {
@@ -151,7 +139,7 @@ void display() {
     }
 
     if (question == 3) {
-        drawCurveQuestion3();
+        drawCurveQuestion1or3();
     }
 
     glFlush();
@@ -166,20 +154,9 @@ void reshape(int w, int h) {
     glLoadIdentity();
 }
 
-// Ενημερώνει το σημείο που έχει επιλεγεί με βάση τη θέση του ποντικιού
-void updatePointPosition(int x, int y) {
-    if (selectedPoint != -1) {
-        double w = glutGet(GLUT_WINDOW_WIDTH);
-        double h = glutGet(GLUT_WINDOW_HEIGHT);
-        controlPoints[selectedPoint][0] = (x - w / 2) * 20.0 / w;
-        controlPoints[selectedPoint][1] = (h / 2 - y) * 20.0 / h;
-        glutPostRedisplay();
-    }
-}
-
 void mouse(int button, int state, int x, int y) {
     // Ορίζουμε την απόσταση ανίχνευσης
-    const float d = 10;
+    const float d = 3;
     double w = glutGet(GLUT_WINDOW_WIDTH);
     double h = glutGet(GLUT_WINDOW_HEIGHT);
     float worldX = (x - w / 2) * 20.0 / w;
@@ -221,15 +198,41 @@ void mouse(int button, int state, int x, int y) {
     }
 }
 
-
 void motion(int x, int y) {
     if (selectedPoint != -1) {
-        // Convert window coordinates to world coordinates for motion
         double w = glutGet(GLUT_WINDOW_WIDTH);
         double h = glutGet(GLUT_WINDOW_HEIGHT);
+
+        // Update the position of the selected point based on mouse coordinates
         controlPoints[selectedPoint][0] = (x - w / 2) * 20.0 / w;
         controlPoints[selectedPoint][1] = (h / 2 - y) * 20.0 / h;
 
+        // Check if the question is equal to 3 for special handling
+        if (question == 3) {
+            // Handling when point 3 is selected
+            if (selectedPoint == 3) {
+                // Assuming the distance between points 3 and 2 should be equal to the distance between 3 and 4 after the update
+                double dx = controlPoints[4][0] - controlPoints[3][0]; // Distance in x between 3 and 4
+                double dy = controlPoints[4][1] - controlPoints[3][1]; // Distance in y between 3 and 4
+
+                // Update points 2 and 4 to be mirrored across point 3
+                controlPoints[2][0] = controlPoints[3][0] - dx;
+                controlPoints[2][1] = controlPoints[3][1] - dy;
+
+                // Point 4 is already in place, but if adjustments are needed, they can be applied similarly
+            }
+            // Handling when point 2 or 4 is selected
+            else if (selectedPoint == 2 || selectedPoint == 4) {
+                int mirrorPoint = (selectedPoint == 2) ? 4 : 2; // Determine the point to mirror
+                int pivotPoint = 3; // Assuming point 3 is the pivot for mirroring
+
+                // Apply the mirroring formula
+                controlPoints[mirrorPoint][0] = 2 * controlPoints[pivotPoint][0] - controlPoints[selectedPoint][0];
+                controlPoints[mirrorPoint][1] = 2 * controlPoints[pivotPoint][1] - controlPoints[selectedPoint][1];
+            }
+        }
+
+        // Redraw the scene with the updated points
         glutPostRedisplay();
     }
 }
