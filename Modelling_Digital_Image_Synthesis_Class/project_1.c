@@ -121,10 +121,6 @@ void drawBezierCurveSegment(float controlPoints[4][3]) {
     glEnd();
 }
 
-void drawCurveQuestion3() {
-    
-}
-
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -155,48 +151,54 @@ void reshape(int w, int h) {
 }
 
 void mouse(int button, int state, int x, int y) {
-    // Ορίζουμε την απόσταση ανίχνευσης
-    const float d = 3;
+    const float d = 3.0f;
     double w = glutGet(GLUT_WINDOW_WIDTH);
     double h = glutGet(GLUT_WINDOW_HEIGHT);
     float worldX = (x - w / 2) * 20.0 / w;
     float worldY = (h / 2 - y) * 20.0 / h;
 
-    if (button == GLUT_LEFT_BUTTON) {
-        if (state == GLUT_DOWN) {
-            if (!drawEnabled) {
-                // Προσθήκη σημείων ελέγχου αν δεν έχουμε ακόμα φτάσει τα 7
-                if (pointCount < 7) {
-                    controlPoints[pointCount][0] = worldX;
-                    controlPoints[pointCount][1] = worldY;
-                    controlPoints[pointCount][2] = 0.0; // Z coordinate is zero for 2D
-                    pointCount++;
-                    if (pointCount == 7) {
-                        drawEnabled = true;
-                    }
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        if (!drawEnabled) {
+            if (pointCount < 7) {
+                controlPoints[pointCount][0] = worldX;
+                controlPoints[pointCount][1] = worldY;
+                controlPoints[pointCount][2] = 0; // Z coordinate is zero for 2D
+                pointCount++;
+
+                if (pointCount == 7) {
+                    drawEnabled = true;
+
+                    // Correctly adjust for p2, p3, and p4 now being at indices 2, 3, and 4
+                    float dx = controlPoints[4][0] - controlPoints[3][0]; // x distance from p3 to p4
+                    float dy = controlPoints[4][1] - controlPoints[3][1]; // y distance from p3 to p4
+
+                    // Adjust p2 to be mirrored about p3, equidistant from p3 as p4
+                    controlPoints[2][0] = controlPoints[3][0] - dx;
+                    controlPoints[2][1] = controlPoints[3][1] - dy;
                 }
             }
-            else {
-                // Εντοπισμός και επιλογή του πλησιέστερου σημείου ελέγχου
-                float minDist = FLT_MAX;
-                int closestPoint = -1;
-                for (int i = 0; i < pointCount; i++) {
-                    float dist = distance(worldX, worldY, controlPoints[i][0], controlPoints[i][1]);
-                    if (dist < d && dist < minDist) {
-                        minDist = dist;
-                        closestPoint = i;
-                    }
+        }
+        else {
+            // Identifying and selecting the closest control point
+            float minDist = FLT_MAX;
+            int closestPoint = -1;
+            for (int i = 0; i < pointCount; i++) {
+                float dist = distance(worldX, worldY, controlPoints[i][0], controlPoints[i][1]);
+                if (dist < d && dist < minDist) {
+                    minDist = dist;
+                    closestPoint = i;
                 }
-                selectedPoint = closestPoint;
             }
+            selectedPoint = closestPoint;
         }
-        else if (state == GLUT_UP) {
-            // Απελευθέρωση του επιλεγμένου σημείου
-            selectedPoint = -1;
-        }
-        glutPostRedisplay();
     }
+    else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+        // Release the selected point
+        selectedPoint = -1;
+    }
+    glutPostRedisplay();
 }
+
 
 void motion(int x, int y) {
     if (selectedPoint != -1) {
