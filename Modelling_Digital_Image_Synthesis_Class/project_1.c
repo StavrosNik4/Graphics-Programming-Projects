@@ -167,7 +167,9 @@ void mouse(int button, int state, int x, int y) {
 
                 if (pointCount == 7) {
                     drawEnabled = true;
+                }
 
+                if (pointCount == 7 && question == 3){
                     // Correctly adjust for p2, p3, and p4 now being at indices 2, 3, and 4
                     float dx = controlPoints[4][0] - controlPoints[3][0]; // x distance from p3 to p4
                     float dy = controlPoints[4][1] - controlPoints[3][1]; // y distance from p3 to p4
