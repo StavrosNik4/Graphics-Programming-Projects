@@ -6,6 +6,10 @@
 
 #define MAX_PARTICLES 1000
 #define GRAVITY -9.81f  // global constant
+# define M_PI  3.14159265358979323846
+float angle = 0.0f;
+float cameraX = 0.0;
+float cameraZ = 20.0;
 
 // struct to represent each particle
 typedef struct {
@@ -70,7 +74,7 @@ void updateParticle(Particle* p, float deltaTime) {
 int lastActivatedParticle = 0;
 
 void activateParticles() {
-    
+
     int particlesToActivate = 2; // How many particles to activate per frame
 
     for (int i = 0; i < particlesToActivate; i++) {
@@ -142,13 +146,37 @@ void initGL() {
     glMatrixMode(GL_MODELVIEW);
 }
 
+void moveCamera(int key, int x, int y) {
+    const float rotationSpeed = 2.0f;  // Speed of rotation
+    float radius = 20;//find radius for rotation around center
+
+    switch (key) {
+    case GLUT_KEY_RIGHT:
+        angle += rotationSpeed;  // Increase the angle for clockwise rotation
+        cameraX = radius * sin(angle * M_PI / 180.0);//angle * M_PI / 180.0 to convert angle into radians
+        cameraZ = radius * cos(angle * M_PI / 180.0);
+        break;
+    case GLUT_KEY_LEFT:
+        angle -= rotationSpeed;  // Decrease the angle for counterclockwise rotation
+        cameraX = radius * sin(angle * M_PI / 180.0);
+        cameraZ = radius * cos(angle * M_PI / 180.0);
+        break;
+    }
+
+    glutPostRedisplay();  // Request a redraw of the scene
+}
+
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(0.0, 5.0, 20.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(cameraX, 5.0, cameraZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     drawField();
     drawParticles();
     glutSwapBuffers();
+}
+
+void reshape(int width, int height) {
+    glViewport(0, 0, width, height);
 }
 
 void timer(int value) {
@@ -166,7 +194,9 @@ int main(int argc, char** argv) {
     glutCreateWindow("Particle System");
     initGL();
     initializeParticles();
+    glutSpecialFunc(moveCamera);
     glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
     glutTimerFunc(0, timer, 0);
     glutMainLoop();
     return 0;
