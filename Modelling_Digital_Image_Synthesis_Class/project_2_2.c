@@ -102,15 +102,32 @@ void drawField() {
     glEnd();
 }
 
-void drawParticles() {
-    glBegin(GL_POINTS); // we are drawing points to represent the particles
-    for (int i = 0; i < MAX_PARTICLES; i++) {
-        if (particles[i].isActive) { // Draw only active particles
-            glColor3fv(particles[i].color); // Set the particle's color
-            glVertex3fv(particles[i].position);
-        }
+#define CIRCLE_SEGMENTS 128 // More segments for a smoother circle
+
+// Helper function to draw a circle using GL_TRIANGLE_FAN
+void drawCircle(float cx, float cy, float cz, float r, const float* color) {
+    glColor3fv(color); // Set the circle's color
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f(cx, cy, cz); // Center of circle
+    for (int i = 0; i <= CIRCLE_SEGMENTS; i++) {
+        float angle = 2.0f * 3.1415926f * (float)i / (float)CIRCLE_SEGMENTS;
+        float x = r * cosf(angle);
+        float y = r * sinf(angle);
+        glVertex3f(x + cx, y + cy, cz);
     }
     glEnd();
+}
+
+void drawParticles() {
+    //glBegin(GL_POINTS); // we are drawing points to represent the particles
+    for (int i = 0; i < MAX_PARTICLES; i++) {
+        if (particles[i].isActive) { // Draw only active particles
+            //glColor3fv(particles[i].color); // Set the particle's color
+            //glVertex3fv(particles[i].position);
+            drawCircle(particles[i].position[0], particles[i].position[1], particles[i].position[2], 0.07f, particles[i].color);
+        }
+    }
+    //glEnd();
 }
 
 void initGL() {
