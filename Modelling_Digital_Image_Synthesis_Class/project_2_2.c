@@ -122,13 +122,29 @@ void drawCircle(float cx, float cy, float cz, float r, const float* color) {
     glEnd();
 }
 
+void drawParticle(Particle p) {
+    glPushMatrix(); // Save the current matrix
+
+    // Translate to the particle's position
+    glTranslatef(p.position[0], p.position[1], p.position[2]);
+
+    // Set the particle's color
+    glColor3fv(p.color);
+
+    // Draw the particle as a solid sphere
+    glutSolidSphere(0.05f, 16, 16); // Adjust the radius and resolution as needed
+
+    glPopMatrix(); // Restore the matrix
+}
+
 void drawParticles() {
     //glBegin(GL_POINTS); // we are drawing points to represent the particles
     for (int i = 0; i < MAX_PARTICLES; i++) {
         if (particles[i].isActive) { // Draw only active particles
             //glColor3fv(particles[i].color); // Set the particle's color
             //glVertex3fv(particles[i].position);
-            drawCircle(particles[i].position[0], particles[i].position[1], particles[i].position[2], 0.07f, particles[i].color);
+            //drawCircle(particles[i].position[0], particles[i].position[1], particles[i].position[2], 0.07f, particles[i].color);
+            drawParticle(particles[i]);
         }
     }
     //glEnd();
