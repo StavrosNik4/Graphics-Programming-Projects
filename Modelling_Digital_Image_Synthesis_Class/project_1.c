@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <float.h>
 
-
 // Global variable to check which question to implement
 int question = 1;
 
@@ -179,7 +178,6 @@ void mouse(int button, int state, int x, int y) {
     }
     glutPostRedisplay();
 }
-
 
 void motion(int x, int y) {
     if (selectedPoint != -1) {
