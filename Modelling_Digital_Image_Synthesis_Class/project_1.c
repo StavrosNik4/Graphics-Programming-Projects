@@ -323,9 +323,8 @@ void menu(int id)
         glutPostRedisplay();
     }
 
-    if (id == 5) {
-        exit(0);
-    }
+    if (id == 5) exit(0);
+
 }
 
 // create menu and options
