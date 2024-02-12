@@ -5,8 +5,7 @@
 #include <float.h>
 
 
-// GLOBAL VARIABLES
-
+// Global variable to check which question to implement
 int question = 1;
 
 // Variables for control points
@@ -96,7 +95,7 @@ void drawCurveQuestion2() {
             glVertex3fv(point); // Draw the point
         }
         glEnd();
-        
+
     }
 
     // Σχεδίαση των σημείων ελέγχου
@@ -109,34 +108,18 @@ void drawCurveQuestion2() {
     glEnd();
 }
 
-void drawBezierCurveSegment(float controlPoints[4][3]) {
-    // Assuming the control points are correctly set for C0 and C1 continuity
-    glEnable(GL_MAP1_VERTEX_3);
-    glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &controlPoints[0][0]);
-
-    glBegin(GL_LINE_STRIP);
-    for (int i = 0; i <= 30; i++) {
-        glEvalCoord1f((GLfloat)i / 30.0);
-    }
-    glEnd();
-}
-
-
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     glColor3f(0.0, 1.0, 0.0);
 
-    if (question == 1) {
+    if (question == 1)
         drawCurveQuestion1or3();
-    }
 
-    if (question == 2) {
+    if (question == 2)
         drawCurveQuestion2();
-    }
 
-    if (question == 3) {
+    if (question == 3)
         drawCurveQuestion1or3();
-    }
 
     glFlush();
 }
@@ -165,11 +148,10 @@ void mouse(int button, int state, int x, int y) {
                 controlPoints[pointCount][2] = 0; // Z coordinate is zero for 2D
                 pointCount++;
 
-                if (pointCount == 7) {
+                if (pointCount == 7)
                     drawEnabled = true;
-                }
 
-                if (pointCount == 7 && question == 3){
+                if (pointCount == 7 && question == 3) {
                     // Correctly adjust for p2, p3, and p4 now being at indices 2, 3, and 4
                     float dx = controlPoints[4][0] - controlPoints[3][0]; // x distance from p3 to p4
                     float dy = controlPoints[4][1] - controlPoints[3][1]; // y distance from p3 to p4
@@ -292,7 +274,7 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(500, 500);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Κυβικές Καμπύλες Παρεμβολής με Έλεγχο Ποντικιού");
+    glutCreateWindow("Curves and Surface");
     createMenu(); // create menu and options
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
