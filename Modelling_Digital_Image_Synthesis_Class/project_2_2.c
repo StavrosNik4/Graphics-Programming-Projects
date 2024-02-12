@@ -28,19 +28,9 @@ typedef struct {
 // Global variable array to save all the particles
 Particle particles[MAX_PARTICLES]; 
 
-// Particles Initialazation Function
-void initializeParticles() {
-    srand(time(NULL)); // Seed for random number generation
+void changeParticleColors() {
     for (int i = 0; i < MAX_PARTICLES; i++) {
-        particles[i].position[0] = 0.0f;
-        particles[i].position[1] = 5.0f;
-        particles[i].position[2] = 0.0f;
-
-        particles[i].velocity[0] = ((float)(rand() % 100) / 50.0f - 1.0f); // Random x velocity
-        particles[i].velocity[1] = (float)(rand() % 50) / 10.0f; // Initial upward velocity
-        particles[i].velocity[2] = ((float)(rand() % 100) / 50.0f - 1.0f); // Random z velocity
-
-        if (colorOption == 1) { // random color
+        if (colorOption == 1) { // random
             // Initialize each particle with a random color
             particles[i].color[0] = (float)rand() / (float)RAND_MAX; // Red component
             particles[i].color[1] = (float)rand() / (float)RAND_MAX; // Green component
@@ -61,9 +51,25 @@ void initializeParticles() {
             particles[i].color[1] = 1.0f; // Green component
             particles[i].color[2] = 0.0f; // Blue component
         }
+    }
+}
+
+// Particles Initialazation Function
+void initializeParticles() {
+    srand(time(NULL)); // Seed for random number generation
+    for (int i = 0; i < MAX_PARTICLES; i++) {
+        particles[i].position[0] = 0.0f;
+        particles[i].position[1] = 5.0f;
+        particles[i].position[2] = 0.0f;
+
+        particles[i].velocity[0] = ((float)(rand() % 100) / 50.0f - 1.0f); // Random x velocity
+        particles[i].velocity[1] = (float)(rand() % 50) / 10.0f; // Initial upward velocity
+        particles[i].velocity[2] = ((float)(rand() % 100) / 50.0f - 1.0f); // Random z 
 
         particles[i].isActive = 0; // Initially, all particles are inactive
     }
+
+    changeParticleColors();
 }
 
 // Global variable to keep track of the last activated particle
@@ -236,31 +242,7 @@ void timer(int value) {
     glutTimerFunc(16, timer, 0); // Approx. 60 times per second
 }
 
-void changeParticleColors() {
-    for (int i = 0; i < MAX_PARTICLES; i++) {
-        if (colorOption == 1) { // random
-            // Initialize each particle with a random color
-            particles[i].color[0] = (float)rand() / (float)RAND_MAX; // Red component
-            particles[i].color[1] = (float)rand() / (float)RAND_MAX; // Green component
-            particles[i].color[2] = (float)rand() / (float)RAND_MAX; // Blue component
-        }
-        else if (colorOption == 2) { // pink
-            particles[i].color[0] = 1.0f; // Red component
-            particles[i].color[1] = 0.75f; // Green component
-            particles[i].color[2] = 0.8f; // Blue component
-        }
-        else if (colorOption == 3) { // green
-            particles[i].color[0] = 0.0f; // Red component
-            particles[i].color[1] = 1.0f; // Green component
-            particles[i].color[2] = 0.0f; // Blue component
-        }
-        else if (colorOption == 4) { // yellow
-            particles[i].color[0] = 1.0f; // Red component
-            particles[i].color[1] = 1.0f; // Green component
-            particles[i].color[2] = 0.0f; // Blue component
-        }
-    }
-}
+
 
 // Keyboard callback functions
 void keyboard(unsigned char key, int x, int y) {
