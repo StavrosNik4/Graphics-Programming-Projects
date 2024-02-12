@@ -34,9 +34,8 @@ void deCasteljau(float* dest, float t, float points[][3], int degree) {
     }
 
     // Interpolate between each pair of points
-    for (int i = 0; i < degree; ++i) {
+    for (int i = 0; i < degree; ++i) 
         interpolate(newpoints[i], points[i], points[i + 1], t);
-    }
 
     // Recursively call deCasteljau on the new set of interpolated points
     deCasteljau(dest, t, newpoints, degree - 1);
@@ -55,18 +54,16 @@ void drawCurveQuestion1or3() {
 
         glColor3f(0.0, 0.0, 1.0);
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i <= 30; i++) {
+        for (int i = 0; i <= 30; i++)
             glEvalCoord1f((GLfloat)i / 30.0);
-        }
         glEnd();
 
         glColor3f(0.0, 1.0, 0.0);
         // Draw the second curve
         glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &controlPoints[3][0]);
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i <= 30; i++) {
+        for (int i = 0; i <= 30; i++)
             glEvalCoord1f((GLfloat)i / 30.0);
-        }
         glEnd();
     }
 
@@ -189,23 +186,29 @@ void motion(int x, int y) {
         double w = glutGet(GLUT_WINDOW_WIDTH);
         double h = glutGet(GLUT_WINDOW_HEIGHT);
 
+        double oldX = controlPoints[selectedPoint][0];
+        double oldY = controlPoints[selectedPoint][1];
+
         // Update the position of the selected point based on mouse coordinates
         controlPoints[selectedPoint][0] = (x - w / 2) * 20.0 / w;
         controlPoints[selectedPoint][1] = (h / 2 - y) * 20.0 / h;
+
+        double dx = oldX - controlPoints[selectedPoint][0];
+        double dy = oldY - controlPoints[selectedPoint][1];
 
         // Check if the question is equal to 3 for special handling
         if (question == 3) {
             // Handling when point 3 is selected
             if (selectedPoint == 3) {
-                // Assuming the distance between points 3 and 2 should be equal to the distance between 3 and 4 after the update
-                double dx = controlPoints[4][0] - controlPoints[3][0]; // Distance in x between 3 and 4
-                double dy = controlPoints[4][1] - controlPoints[3][1]; // Distance in y between 3 and 4
 
                 // Update points 2 and 4 to be mirrored across point 3
-                controlPoints[2][0] = controlPoints[3][0] - dx;
-                controlPoints[2][1] = controlPoints[3][1] - dy;
 
-                // Point 4 is already in place, but if adjustments are needed, they can be applied similarly
+                controlPoints[2][0] = controlPoints[2][0] - dx;
+                controlPoints[2][1] = controlPoints[2][1] - dy;
+
+                controlPoints[4][0] = controlPoints[4][0] - dx;
+                controlPoints[4][1] = controlPoints[4][1] - dy;
+
             }
             // Handling when point 2 or 4 is selected
             else if (selectedPoint == 2 || selectedPoint == 4) {
