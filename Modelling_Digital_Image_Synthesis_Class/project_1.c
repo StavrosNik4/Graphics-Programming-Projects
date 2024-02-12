@@ -9,11 +9,12 @@ int question = 1;
 
 // Variables for control points
 float controlPoints[7][3];
+float controlPointsTangents[7][3];
 int pointCount = 0;
 bool drawEnabled = false;
 int selectedPoint = -1;
 
-// Function to interpolate between two points
+// Function to interpolate between two points. Used in deCasteljau
 void interpolate(float* dest, float* a, float* b, float t) {
     dest[0] = (1 - t) * a[0] + t * b[0];
     dest[1] = (1 - t) * a[1] + t * b[1];
@@ -33,7 +34,7 @@ void deCasteljau(float* dest, float t, float points[][3], int degree) {
     }
 
     // Interpolate between each pair of points
-    for (int i = 0; i < degree; ++i) 
+    for (int i = 0; i < degree; ++i)
         interpolate(newpoints[i], points[i], points[i + 1], t);
 
     // Recursively call deCasteljau on the new set of interpolated points
@@ -45,24 +46,60 @@ float distance(float x1, float y1, float x2, float y2) {
     return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-void drawCurveQuestion1or3() {
+void calculateTangentsOfControlPoints() {
+    int i;
+    for (i = 1; i < 7 - 1; i++) {
+        controlPointsTangents[i][0] = (controlPoints[i + 1][0] - controlPoints[i - 1][0]) / 2.0;
+        controlPointsTangents[i][1] = (controlPoints[i + 1][1] - controlPoints[i - 1][1]) / 2.0;
+        controlPointsTangents[i][2] = (controlPoints[i + 1][2] - controlPoints[i - 1][2]) / 2.0;
+    }
+    // Tangents for the first point
+    controlPointsTangents[0][0] = controlPoints[1][0] - controlPoints[0][0];
+    controlPointsTangents[0][1] = controlPoints[1][1] - controlPoints[0][1];
+    controlPointsTangents[0][2] = controlPoints[1][2] - controlPoints[0][2];
+
+    // Tangents for the last point
+    int last = 7 - 1;
+    controlPointsTangents[last][0] = controlPoints[last][0] - controlPoints[last - 1][0];
+    controlPointsTangents[last][1] = controlPoints[last][1] - controlPoints[last - 1][1];
+    controlPointsTangents[last][2] = controlPoints[last][2] - controlPoints[last - 1][2];
+}
+
+void drawQuestion1CubicHermiteCurve() {
+    int i;
+    float t;
+    // Hermite basis functions coefficients
+    float h00, h10, h01, h11;
+    float p[3]; // Point on the curve
+
     if (drawEnabled) {
-        // Draw the first curve
-        glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &controlPoints[0][0]);
-        glEnable(GL_MAP1_VERTEX_3);
-
-        glColor3f(0.0, 0.0, 1.0);
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i <= 30; i++)
-            glEvalCoord1f((GLfloat)i / 30.0);
-        glEnd();
+        for (i = 0; i < 7 - 1; i++) {
+            
+            // Select color
+            if (i < 3) 
+                glColor3f(0.0, 1.0, 0.0);
+            else
+                glColor3f(0.0, 0.0, 1.0);
 
-        glColor3f(0.0, 1.0, 0.0);
-        // Draw the second curve
-        glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &controlPoints[3][0]);
-        glBegin(GL_LINE_STRIP);
-        for (int i = 0; i <= 30; i++)
-            glEvalCoord1f((GLfloat)i / 30.0);
+            for (t = 0; t <= 1; t += 0.01) {
+                // Compute basis functions
+                h00 = 2 * pow(t, 3) - 3 * pow(t, 2) + 1;
+                h10 = pow(t, 3) - 2 * pow(t, 2) + t;
+                h01 = -2 * pow(t, 3) + 3 * pow(t, 2);
+                h11 = pow(t, 3) - pow(t, 2);
+
+                // Compute the point
+                p[0] = h00 * controlPoints[i][0] + h10 * controlPointsTangents[i][0] +
+                    h01 * controlPoints[i + 1][0] + h11 * controlPointsTangents[i + 1][0];
+                p[1] = h00 * controlPoints[i][1] + h10 * controlPointsTangents[i][1] +
+                    h01 * controlPoints[i + 1][1] + h11 * controlPointsTangents[i + 1][1];
+                p[2] = h00 * controlPoints[i][2] + h10 * controlPointsTangents[i][2] +
+                    h01 * controlPoints[i + 1][2] + h11 * controlPointsTangents[i + 1][2];
+
+                glVertex3fv(p);
+            }
+        }
         glEnd();
     }
 
@@ -73,6 +110,41 @@ void drawCurveQuestion1or3() {
     for (int i = 0; i < pointCount; i++) {
         glVertex3fv(&controlPoints[i][0]);
     }
+    glEnd();
+}
+
+
+void drawCurveQuestion3() {
+
+    if (drawEnabled) {
+
+        glEnable(GL_MAP1_VERTEX_3);
+
+        // Draw the first curve
+        glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &controlPoints[0][0]);
+
+        glColor3f(0.0, 0.0, 1.0);
+        glBegin(GL_LINE_STRIP);
+        for (int i = 0; i <= 30; i++)
+            glEvalCoord1f((GLfloat)i / 30.0);
+        glEnd();
+
+        // Draw the second curve
+
+        glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &controlPoints[3][0]);
+        glColor3f(0.0, 1.0, 0.0);
+        glBegin(GL_LINE_STRIP);
+        for (int i = 0; i <= 30; i++)
+            glEvalCoord1f((GLfloat)i / 30.0);
+        glEnd();
+    }
+
+    // Draw control points
+    glPointSize(5.0);
+    glColor3f(1.0, 0.0, 0.0);
+    glBegin(GL_POINTS);
+    for (int i = 0; i < pointCount; i++)
+        glVertex3fv(&controlPoints[i][0]);
     glEnd();
 }
 void drawCurveQuestion2() {
@@ -108,14 +180,16 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     glColor3f(0.0, 1.0, 0.0);
 
-    if (question == 1)
-        drawCurveQuestion1or3();
+    if (question == 1) {
+        drawQuestion1CubicHermiteCurve();
+        calculateTangentsOfControlPoints();
+    }
 
     if (question == 2)
         drawCurveQuestion2();
 
     if (question == 3)
-        drawCurveQuestion1or3();
+        drawCurveQuestion3();
 
     glFlush();
 }
@@ -249,11 +323,6 @@ void menu(int id)
         glutPostRedisplay();
     }
 
-    if (id == 4) {
-        question = 4;
-        glutPostRedisplay();
-    }
-
     if (id == 5) {
         exit(0);
     }
@@ -265,7 +334,6 @@ void createMenu() {
     glutAddMenuEntry("1", 1);
     glutAddMenuEntry("2", 2);
     glutAddMenuEntry("3", 3);
-    //glutAddMenuEntry("4", 4);
     glutAddMenuEntry("Quit", 5);
     glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
 }
