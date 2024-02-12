@@ -8,3 +8,11 @@ University Projects for Graphics classes with OpenGL (GLUT)
 ### Project 2: Cube - Basic Transforms
 
 ### Project 3: House with sun - Advance Topics
+
+## Modelling - Digital Image Synthesis Class Projects
+
+### Project 1: Splines
+
+### Project 2.1: 
+
+### Project 2.2: Particles System
