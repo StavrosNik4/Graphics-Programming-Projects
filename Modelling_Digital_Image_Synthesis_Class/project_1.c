@@ -13,7 +13,7 @@ int pointCount = 0;
 bool drawEnabled = false;
 int selectedPoint = -1;
 
-// Define the basis matrix for cubic interpolation
+// basis matrix for cubic interpolation (for question 1)
 float M[4][4] = {
     {1, 0, 0, 0},
     {-5.5, 9, -4.5, 1},
@@ -21,6 +21,72 @@ float M[4][4] = {
     {-4.5, 13.5, -13.5, 4.5}
 };
 
+
+// Support function to draw control points
+void drawControlPoints() {
+    glPointSize(5.0);
+    glColor3f(1.0, 0.0, 0.0);
+    glBegin(GL_POINTS);
+    for (int i = 0; i < pointCount; i++)
+        glVertex3fv(&controlPoints[i][0]);
+    glEnd();
+}
+
+// Support function to get the result a point of the curve (for question 1)
+void multiplyMatrixAndVector(float u, float points[4][3], float result[3]) {
+    float U[4] = { 1, u, u * u, u * u * u };
+
+    // Initialize the result array to 0
+    for (int i = 0; i < 3; i++)
+        result[i] = 0;
+
+    // multiplying
+    for (int i = 0; i < 4; i++) {
+        result[0] += U[i] * (M[i][0] * points[0][0] + M[i][1] * points[1][0] + M[i][2] * points[2][0] + M[i][3] * points[3][0]);
+        result[1] += U[i] * (M[i][0] * points[0][1] + M[i][1] * points[1][1] + M[i][2] * points[2][1] + M[i][3] * points[3][1]);
+        result[2] += U[i] * (M[i][0] * points[0][2] + M[i][1] * points[1][2] + M[i][2] * points[2][2] + M[i][3] * points[3][2]);
+    }
+}
+
+// Support function to draw a curve (for question 1)
+void drawCubicCurve(float points[4][3]) {
+    glBegin(GL_LINE_STRIP); // Start drawing a line strip
+
+    float curvePoint[3]; // Temporary storage for the curve point
+    // Iterate over u from 0 to 1 to generate the curve
+    for (float u = 0; u <= 1; u += 0.01) {
+        multiplyMatrixAndVector(u, points, curvePoint); // Fill curvePoint with the computed coordinates
+        glVertex3f(curvePoint[0], curvePoint[1], curvePoint[2]); // Create a vertex at the calculated point
+    }
+
+    glEnd(); // End drawing the line strip
+}
+
+void drawQuestion1() {
+    
+    if (drawEnabled) {
+        float segment[4][3]; // Temporary storage for a segment of four control points
+
+        // Prepare and draw the first cubic curve segment
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 3; j++)
+                segment[i][j] = controlPoints[i][j];
+
+        glColor3f(0.0, 1.0, 0.0);
+        drawCubicCurve(segment);
+
+        // Prepare and draw the second cubic curve segment
+        // Note: The second segment starts at controlPoints[3], so it includes controlPoints[3] to controlPoints[6]
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 3; j++)
+                segment[i][j] = controlPoints[i + 3][j]; // Adjust index to get the second segment
+
+        glColor3f(0.0, 0.0, 1.0);
+        drawCubicCurve(segment);
+    }
+
+    drawControlPoints();
+}
 
 // Function to interpolate between two points. Used in deCasteljau
 void interpolate(float* dest, float* a, float* b, float t) {
@@ -49,112 +115,9 @@ void deCasteljau(float* dest, float t, float points[][3], int degree) {
     deCasteljau(dest, t, newpoints, degree - 1);
 }
 
-// Function to check distance for selection of a point
-float distance(float x1, float y1, float x2, float y2) {
-    return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-}
-
-void multiplyMatrixAndVector(float u, float points[4][3], float result[3]) {
-    //float U[4] = { u * u * u, u * u, u, 1 };
-    float U[4] = { 1, u, u * u, u * u * u };
-
-    // Initialize the result array to 0
-    for (int i = 0; i < 3; i++) {
-        result[i] = 0;
-    }
-
-    // Assuming M is defined elsewhere and accessible
-    for (int i = 0; i < 4; i++) {
-        result[0] += U[i] * (M[i][0] * points[0][0] + M[i][1] * points[1][0] + M[i][2] * points[2][0] + M[i][3] * points[3][0]);
-        result[1] += U[i] * (M[i][0] * points[0][1] + M[i][1] * points[1][1] + M[i][2] * points[2][1] + M[i][3] * points[3][1]);
-        result[2] += U[i] * (M[i][0] * points[0][2] + M[i][1] * points[1][2] + M[i][2] * points[2][2] + M[i][3] * points[3][2]);
-    }
-}
-
-void drawCubicCurve(float points[4][3]) {
-    glBegin(GL_LINE_STRIP); // Start drawing a line strip
-
-    float curvePoint[3]; // Temporary storage for the curve point
-    // Iterate over u from 0 to 1 to generate the curve
-    for (float u = 0; u <= 1; u += 0.01) {
-        multiplyMatrixAndVector(u, points, curvePoint); // Fill curvePoint with the computed coordinates
-        glVertex3f(curvePoint[0], curvePoint[1], curvePoint[2]); // Create a vertex at the calculated point
-    }
-
-    glEnd(); // End drawing the line strip
-}
-
-void drawQuestion1() {
-    
-    if (drawEnabled) {
-        // Assuming controlPoints is already defined and populated
-        float segment[4][3]; // Temporary storage for a segment of four control points
-
-        // Prepare and draw the first cubic curve segment
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 3; j++) {
-                segment[i][j] = controlPoints[i][j];
-            }
-        }
-        drawCubicCurve(segment);
-
-        // Prepare and draw the second cubic curve segment
-        // Note: The second segment starts at controlPoints[3], so it includes controlPoints[3] to controlPoints[6]
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 3; j++) {
-                segment[i][j] = controlPoints[i + 3][j]; // Adjust index to get the second segment
-            }
-        }
-        drawCubicCurve(segment);
-    }
-
-    // Draw control points
-    glPointSize(5.0);
-    glColor3f(1.0, 0.0, 0.0);
-    glBegin(GL_POINTS);
-    for (int i = 0; i < pointCount; i++) {
-        glVertex3fv(&controlPoints[i][0]);
-    }
-    glEnd();
-}
-
-
-void drawCurveQuestion3() {
-
-    if (drawEnabled) {
-
-        glEnable(GL_MAP1_VERTEX_3);
-
-        // Draw the first curve
-        glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &controlPoints[0][0]);
-
-        glColor3f(0.0, 0.0, 1.0);
-        glBegin(GL_LINE_STRIP);
-        for (int i = 0; i <= 30; i++)
-            glEvalCoord1f((GLfloat)i / 30.0);
-        glEnd();
-
-        // Draw the second curve
-
-        glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &controlPoints[3][0]);
-        glColor3f(0.0, 1.0, 0.0);
-        glBegin(GL_LINE_STRIP);
-        for (int i = 0; i <= 30; i++)
-            glEvalCoord1f((GLfloat)i / 30.0);
-        glEnd();
-    }
-
-    // Draw control points
-    glPointSize(5.0);
-    glColor3f(1.0, 0.0, 0.0);
-    glBegin(GL_POINTS);
-    for (int i = 0; i < pointCount; i++)
-        glVertex3fv(&controlPoints[i][0]);
-    glEnd();
-}
 void drawCurveQuestion2() {
     if (drawEnabled) {
-        // Κλειστή καμπύλη Bezier - εξασφαλίζουμε ότι το πρώτο και τελευταίο σημείο ελέγχου συμπίπτουν
+        // First and last point are the same
         controlPoints[6][0] = controlPoints[0][0];
         controlPoints[6][1] = controlPoints[0][1];
         controlPoints[6][2] = controlPoints[0][2];
@@ -171,14 +134,45 @@ void drawCurveQuestion2() {
 
     }
 
-    // Σχεδίαση των σημείων ελέγχου
-    glPointSize(5.0);
-    glColor3f(1.0, 0.0, 0.0);
-    glBegin(GL_POINTS);
-    for (int i = 0; i < pointCount; i++) {
-        glVertex3fv(&controlPoints[i][0]);
-    }
+    drawControlPoints();
+}
+
+void drawBezierCurve(float points[4][3]) {
+    glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, points);
+    glBegin(GL_LINE_STRIP);
+    for (int i = 0; i <= 30; i++)
+        glEvalCoord1f((GLfloat)i / 30.0);
     glEnd();
+}
+
+void drawCurveQuestion3() {
+
+    if (drawEnabled) {
+
+        glEnable(GL_MAP1_VERTEX_3);
+
+        // Draw the first curve
+        float segment[4][3]; // Temporary storage for a segment of four control points
+
+        // Prepare and draw the first cubic curve segment
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 3; j++)
+                segment[i][j] = controlPoints[i][j];
+
+        glColor3f(0.0, 1.0, 0.0);
+        drawBezierCurve(segment);
+
+        // Draw the second curve
+
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 3; j++)
+                segment[i][j] = controlPoints[i + 3][j]; // Adjust index to get the second segment
+
+        glColor3f(0.0, 0.0, 1.0);
+        drawBezierCurve(segment);
+    }
+
+    drawControlPoints();
 }
 
 void display() {
@@ -197,13 +191,9 @@ void display() {
     glFlush();
 }
 
-void reshape(int w, int h) {
-    glViewport(0, 0, w, h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(-10.0, 10.0, -10.0, 10.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+// Function to check distance for selection of a point
+float distance(float x1, float y1, float x2, float y2) {
+    return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
 void mouse(int button, int state, int x, int y) {
@@ -301,6 +291,15 @@ void motion(int x, int y) {
     }
 }
 
+void reshape(int w, int h) {
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-10.0, 10.0, -10.0, 10.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
 // menu callback function
 void menu(int id)
 {
@@ -345,7 +344,7 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(500, 500);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Curves and Surface");
+    glutCreateWindow("Curves");
     createMenu(); // create menu and options
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
