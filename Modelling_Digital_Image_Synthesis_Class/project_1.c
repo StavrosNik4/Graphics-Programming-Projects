@@ -9,10 +9,18 @@ int question = 1;
 
 // Variables for control points
 float controlPoints[7][3];
-float controlPointsTangents[7][3];
 int pointCount = 0;
 bool drawEnabled = false;
 int selectedPoint = -1;
+
+// Define the basis matrix for cubic interpolation
+float M[4][4] = {
+    {1, 0, 0, 0},
+    {-5.5, 9, -4.5, 1},
+    {9, -22.5, 18, -4.5},
+    {-4.5, 13.5, -13.5, 4.5}
+};
+
 
 // Function to interpolate between two points. Used in deCasteljau
 void interpolate(float* dest, float* a, float* b, float t) {
@@ -46,61 +54,58 @@ float distance(float x1, float y1, float x2, float y2) {
     return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-void calculateTangentsOfControlPoints() {
-    int i;
-    for (i = 1; i < 7 - 1; i++) {
-        controlPointsTangents[i][0] = (controlPoints[i + 1][0] - controlPoints[i - 1][0]) / 2.0;
-        controlPointsTangents[i][1] = (controlPoints[i + 1][1] - controlPoints[i - 1][1]) / 2.0;
-        controlPointsTangents[i][2] = (controlPoints[i + 1][2] - controlPoints[i - 1][2]) / 2.0;
-    }
-    // Tangents for the first point
-    controlPointsTangents[0][0] = controlPoints[1][0] - controlPoints[0][0];
-    controlPointsTangents[0][1] = controlPoints[1][1] - controlPoints[0][1];
-    controlPointsTangents[0][2] = controlPoints[1][2] - controlPoints[0][2];
+void multiplyMatrixAndVector(float u, float points[4][3], float result[3]) {
+    //float U[4] = { u * u * u, u * u, u, 1 };
+    float U[4] = { 1, u, u * u, u * u * u };
 
-    // Tangents for the last point
-    int last = 7 - 1;
-    controlPointsTangents[last][0] = controlPoints[last][0] - controlPoints[last - 1][0];
-    controlPointsTangents[last][1] = controlPoints[last][1] - controlPoints[last - 1][1];
-    controlPointsTangents[last][2] = controlPoints[last][2] - controlPoints[last - 1][2];
+    // Initialize the result array to 0
+    for (int i = 0; i < 3; i++) {
+        result[i] = 0;
+    }
+
+    // Assuming M is defined elsewhere and accessible
+    for (int i = 0; i < 4; i++) {
+        result[0] += U[i] * (M[i][0] * points[0][0] + M[i][1] * points[1][0] + M[i][2] * points[2][0] + M[i][3] * points[3][0]);
+        result[1] += U[i] * (M[i][0] * points[0][1] + M[i][1] * points[1][1] + M[i][2] * points[2][1] + M[i][3] * points[3][1]);
+        result[2] += U[i] * (M[i][0] * points[0][2] + M[i][1] * points[1][2] + M[i][2] * points[2][2] + M[i][3] * points[3][2]);
+    }
 }
 
-void drawQuestion1CubicHermiteCurve() {
-    int i;
-    float t;
-    // Hermite basis functions coefficients
-    float h00, h10, h01, h11;
-    float p[3]; // Point on the curve
+void drawCubicCurve(float points[4][3]) {
+    glBegin(GL_LINE_STRIP); // Start drawing a line strip
 
+    float curvePoint[3]; // Temporary storage for the curve point
+    // Iterate over u from 0 to 1 to generate the curve
+    for (float u = 0; u <= 1; u += 0.01) {
+        multiplyMatrixAndVector(u, points, curvePoint); // Fill curvePoint with the computed coordinates
+        glVertex3f(curvePoint[0], curvePoint[1], curvePoint[2]); // Create a vertex at the calculated point
+    }
+
+    glEnd(); // End drawing the line strip
+}
+
+void drawQuestion1() {
+    
     if (drawEnabled) {
-        glBegin(GL_LINE_STRIP);
-        for (i = 0; i < 7 - 1; i++) {
-            
-            // Select color
-            if (i < 3) 
-                glColor3f(0.0, 1.0, 0.0);
-            else
-                glColor3f(0.0, 0.0, 1.0);
+        // Assuming controlPoints is already defined and populated
+        float segment[4][3]; // Temporary storage for a segment of four control points
 
-            for (t = 0; t <= 1; t += 0.01) {
-                // Compute basis functions
-                h00 = 2 * pow(t, 3) - 3 * pow(t, 2) + 1;
-                h10 = pow(t, 3) - 2 * pow(t, 2) + t;
-                h01 = -2 * pow(t, 3) + 3 * pow(t, 2);
-                h11 = pow(t, 3) - pow(t, 2);
-
-                // Compute the point
-                p[0] = h00 * controlPoints[i][0] + h10 * controlPointsTangents[i][0] +
-                    h01 * controlPoints[i + 1][0] + h11 * controlPointsTangents[i + 1][0];
-                p[1] = h00 * controlPoints[i][1] + h10 * controlPointsTangents[i][1] +
-                    h01 * controlPoints[i + 1][1] + h11 * controlPointsTangents[i + 1][1];
-                p[2] = h00 * controlPoints[i][2] + h10 * controlPointsTangents[i][2] +
-                    h01 * controlPoints[i + 1][2] + h11 * controlPointsTangents[i + 1][2];
-
-                glVertex3fv(p);
+        // Prepare and draw the first cubic curve segment
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 3; j++) {
+                segment[i][j] = controlPoints[i][j];
             }
         }
-        glEnd();
+        drawCubicCurve(segment);
+
+        // Prepare and draw the second cubic curve segment
+        // Note: The second segment starts at controlPoints[3], so it includes controlPoints[3] to controlPoints[6]
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 3; j++) {
+                segment[i][j] = controlPoints[i + 3][j]; // Adjust index to get the second segment
+            }
+        }
+        drawCubicCurve(segment);
     }
 
     // Draw control points
@@ -180,10 +185,8 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     glColor3f(0.0, 1.0, 0.0);
 
-    if (question == 1) {
-        drawQuestion1CubicHermiteCurve();
-        calculateTangentsOfControlPoints();
-    }
+    if (question == 1)
+        drawQuestion1();
 
     if (question == 2)
         drawCurveQuestion2();
