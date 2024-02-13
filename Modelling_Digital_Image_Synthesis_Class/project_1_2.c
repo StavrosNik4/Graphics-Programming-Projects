@@ -9,7 +9,7 @@
 // Camera global variables
 float angle = 0.0f;
 float cameraX = 0.0f;
-float cameraZ = 10.0f;
+float cameraZ = 15.0f;
 
 int surfaceType = 1;
 
@@ -106,6 +106,20 @@ void updateSurfaceControlPoints() {
             for (int j = 0; j < 4; j++)
                 for (int k = 0; k < 3; k++)
                     surfaceControlPoints[i][j][k] = wavySurfaceControlPoints[i][j][k];
+        break;
+
+    case 3:
+        // Random wavy surface initialization
+        srand((unsigned int)time(NULL)); // Seed the random number generator, call this only once
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                surfaceControlPoints[i][j][0] = (float)j; // x, structured grid
+                surfaceControlPoints[i][j][1] = (float)i; // y, structured grid
+                // Generate random z values within a range for a wavy effect
+                // Adjust the range as needed for your specific use case
+                surfaceControlPoints[i][j][2] = (float)(rand() % 20) / 10.0f - 1.0f; // Random z for wavy effect
+            }
+        }
         break;
 
     default:
@@ -253,7 +267,7 @@ void reshape(int w, int h) {
 
 void specialKeys(int key, int x, int y) {
     const float rotationSpeed = 2.0f;  // Speed of rotation
-    float radius = 10; //find radius for rotation around center
+    float radius = 15; //find radius for rotation around center
 
     switch (key) {
     case GLUT_KEY_RIGHT:
@@ -295,6 +309,12 @@ void menu(int id)
         glutPostRedisplay();
     }
 
+    if (id == 3) {
+        surfaceType = 3;
+        updateSurfaceControlPoints();
+        glutPostRedisplay();
+    }
+
     if (id == 5) exit(0);
 
 }
@@ -304,8 +324,23 @@ void createMenu() {
     glutCreateMenu(menu);
     glutAddMenuEntry("Plain", 1);
     glutAddMenuEntry("Wavy", 2);
+    glutAddMenuEntry("Random", 3);
     glutAddMenuEntry("Quit", 5);
     glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
+}
+
+// Keyboard callback functions
+void keyboard(unsigned char key, int x, int y) {
+    switch (key) {
+    case 'r': // If 'R' or 'r' is pressed, restart the particle system
+    case 'R':
+        surfaceType = 3;
+        updateSurfaceControlPoints();
+        break;
+    default:
+        break;
+    }
+    glutPostRedisplay(); // Redraw the scene with the updated particles
 }
 
 
@@ -330,8 +365,10 @@ int main(int argc, char** argv) {
     createMenu(); // create menu and options
 
     glutSpecialFunc(specialKeys);
+    glutKeyboardFunc(keyboard);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
+
 
     glutMainLoop();
     return 0;
