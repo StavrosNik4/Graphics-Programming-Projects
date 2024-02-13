@@ -4,15 +4,18 @@
 #include <stdbool.h>
 #include <float.h>
 
-
 #define M_PI  3.14159265358979323846
 
 // Camera global variables
 float angle = 0.0f;
-float cameraX = 0.0;
-float cameraZ = 20.0;
+float cameraX = 0.0f;
+float cameraZ = 10.0f;
 
 int surfaceType = 1;
+
+float u_v_factor = 0.01f;
+float pointSize = 1.0f;
+
 
 // basis matrix for cubic interpolation (for question 1)
 float M[4][4] = {
@@ -29,7 +32,7 @@ float MT[4][4] = {
     {0, 1, -4.5, 4.5}
 };
 
-// Assume controlPoints is a 4x4x3 array of floats now, representing a 4x4 grid of 3D control points.
+// Default control points
 float surfaceControlPoints[4][4][3] = {
     {
         {0.0, 0.0, 0.0}, // P00
@@ -57,31 +60,32 @@ float surfaceControlPoints[4][4][3] = {
     }
 };
 
+// Wavy control points
 float wavySurfaceControlPoints[4][4][3] = {
-                {
-                    {0.0, 0.0, 0.0}, // P00
-                    {1.0, 0.0, 1.0}, // P01
-                    {2.0, 0.0, 0.0}, // P02
-                    {3.0, 0.0, -1.0} // P03
-                },
-                {
-                    {0.0, 1.0, -1.0}, // P10
-                    {1.0, 1.0, 0.0}, // P11
-                    {2.0, 1.0, 1.0}, // P12
-                    {3.0, 1.0, 0.0}  // P13
-                },
-                {
-                    {0.0, 2.0, 1.0}, // P20
-                    {1.0, 2.0, -1.0}, // P21
-                    {2.0, 2.0, 0.0}, // P22
-                    {3.0, 2.0, 1.0}  // P23
-                },
-                {
-                    {0.0, 3.0, 0.0}, // P30
-                    {1.0, 3.0, 1.0}, // P31
-                    {2.0, 3.0, -1.0}, // P32
-                    {3.0, 3.0, 0.0}  // P33
-                }
+    {
+        {0.0, 0.0, 0.0}, // P00
+        {1.0, 0.0, 1.0}, // P01
+        {2.0, 0.0, 0.0}, // P02
+        {3.0, 0.0, -1.0} // P03
+    },
+    {
+        {0.0, 1.0, -1.0}, // P10
+        {1.0, 1.0, 0.0}, // P11
+        {2.0, 1.0, 1.0}, // P12
+        {3.0, 1.0, 0.0}  // P13
+    },
+    {
+        {0.0, 2.0, 1.0}, // P20
+        {1.0, 2.0, -1.0}, // P21
+        {2.0, 2.0, 0.0}, // P22
+        {3.0, 2.0, 1.0}  // P23
+    },
+    {
+        {0.0, 3.0, 0.0}, // P30
+        {1.0, 3.0, 1.0}, // P31
+        {2.0, 3.0, -1.0}, // P32
+        {3.0, 3.0, 0.0}  // P33
+    }
 };
 
 void updateSurfaceControlPoints() {
@@ -98,27 +102,11 @@ void updateSurfaceControlPoints() {
         break;
 
     case 2:
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                for (int k = 0; k < 3; k++) {
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+                for (int k = 0; k < 3; k++)
                     surfaceControlPoints[i][j][k] = wavySurfaceControlPoints[i][j][k];
-                }
-            }
-        }
-
         break;
-
-        /*
-        // Wavy surface initialization
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                surfaceControlPoints[i][j][0] = (float)j; // x
-                surfaceControlPoints[i][j][1] = (float)i; // y
-                // Alternate the z-coordinate to create a wave pattern
-                surfaceControlPoints[i][j][2] = ((i + j) % 2 == 0) ? 1.0f : -1.0f;
-            }
-        }
-        break;*/
 
     default:
         // Default or no pattern specified
@@ -139,9 +127,7 @@ void drawControlPoints() {
     glEnd();
 }
 
-
-
-void multiplyMatrixAndVectorSurface(float u, float v, float controlPoints[4][4][3], float result[3]) {
+void getSurfacePoint(float u, float v, float controlPoints[4][4][3], float result[3]) {
     float U[4] = { 1.0, u, u * u, u * u * u };
     float V[4] = { 1.0, v, v * v, v * v * v };
     float UM[4] = { 0.0 };
@@ -181,10 +167,10 @@ void drawBicubicSurface() {
 
     glColor3f(0.0, 1.0, 0.0);
 
-    for (float u = 0; u <= 1; u += 0.02) {
-        for (float v = 0; v <= 1; v += 0.02) {
+    for (float u = 0; u <= 1; u += u_v_factor) {
+        for (float v = 0; v <= 1; v += u_v_factor) {
             float surfacePoint[3];
-            multiplyMatrixAndVectorSurface(u, v, surfaceControlPoints, surfacePoint);
+            getSurfacePoint(u, v, surfaceControlPoints, surfacePoint);
             // Now, you would draw this point on the surface
             // For example, you might use glVertex3fv(surfacePoint) inside a glBegin(GL_POINTS) block
             glBegin(GL_POINTS);
@@ -194,6 +180,36 @@ void drawBicubicSurface() {
     }
 }
 
+void renderBitmapString(float x, float y, void* font, const char* string) {
+    const char* c;
+    glRasterPos2f(x, y);
+    for (c = string; *c != '\0'; c++)
+        glutBitmapCharacter(font, *c);
+}
+
+void drawText() {
+    // Set the color to white for the text
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    // Move back to a 2D view to draw the text
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, glutGet(GLUT_WINDOW_WIDTH), 0.0, glutGet(GLUT_WINDOW_HEIGHT));
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    // Render the text strings
+    renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 20, GLUT_BITMAP_9_BY_15, "Press 'Up Arrow' to decrease u_v_factor and increase resolution");
+    renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 35, GLUT_BITMAP_9_BY_15, "Press 'Down Arrow' to increase u_v_factor and decrease resolution");
+
+    // Restore the previous projection and modelview matrices
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
@@ -201,9 +217,12 @@ void display() {
     glLoadIdentity(); // Reset the drawing perspective
 
     // Position the camera
-    gluLookAt(cameraX, 10.0, cameraZ,  // Camera position in World Space
+    gluLookAt(cameraX, 5.0, cameraZ,  // Camera position in World Space
         0.0, 0.0, 0.0,           // Look at in the center of the scene
         0.0, 1.0, 0.0);          // Up vector is (0,1,0) (positive Y-axis)
+
+
+    drawText();
 
     glColor3f(0.0, 1.0, 0.0); // Set the color of the surface to green
 
@@ -232,11 +251,9 @@ void reshape(int w, int h) {
     glMatrixMode(GL_MODELVIEW);
 }
 
-
-// Function for the movement of the camera
-void moveCamera(int key, int x, int y) {
+void specialKeys(int key, int x, int y) {
     const float rotationSpeed = 2.0f;  // Speed of rotation
-    float radius = 20; //find radius for rotation around center
+    float radius = 10; //find radius for rotation around center
 
     switch (key) {
     case GLUT_KEY_RIGHT:
@@ -249,8 +266,16 @@ void moveCamera(int key, int x, int y) {
         cameraX = radius * sin(angle * M_PI / 180.0);
         cameraZ = radius * cos(angle * M_PI / 180.0);
         break;
-    }
 
+    case GLUT_KEY_UP: // Arrow Up
+        u_v_factor -= 0.001f; // Decrease u_v_factor a little
+        if (u_v_factor < 0.002f) u_v_factor = 0.002f; // Optional: Prevent it from going below 0
+        break;
+    case GLUT_KEY_DOWN: // Arrow Down
+        u_v_factor += 0.001f; // Increase u_v_factor a little
+        if (u_v_factor > 0.04f) u_v_factor = 0.04f; // Optional: Prevent it from going below 0
+        break;
+    }
     glutPostRedisplay();  // Request a redraw of the scene
 }
 
@@ -292,6 +317,7 @@ void init() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
+
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
@@ -303,7 +329,7 @@ int main(int argc, char** argv) {
 
     createMenu(); // create menu and options
 
-    glutSpecialFunc(moveCamera);
+    glutSpecialFunc(specialKeys);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
 
