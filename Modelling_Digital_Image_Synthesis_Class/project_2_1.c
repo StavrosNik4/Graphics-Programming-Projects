@@ -14,8 +14,8 @@ typedef struct DogPart {
 
 // Camera global variables
 float cameraAngle = 0.0f;
-float cameraX = 0.0f;
-float cameraZ = 5.0f;
+float cameraX = 5.0f;
+float cameraZ = 0.0f;
 
 // Initialize the dog parts
 DogPart body, neck, head, upper_limb_A, lower_limb_A, paw_A, upper_limb_B, lower_limb_B, paw_B, upper_limb_C, lower_limb_C, paw_C, upper_limb_D, lower_limb_D, paw_D;
@@ -244,28 +244,28 @@ void applyTransformations() {
     // Translate and rotate each upper limb to the correct position relative to the body
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(-0.3f, -0.3f, 0.3f); // Left front limb
+    glTranslatef(-0.2f, -0.3f, 0.8f); // Left front limb
     glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_A.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.3f, -0.3f, 0.3f); // Right front limb
+    glTranslatef(0.2f, -0.3f, 0.8f); // Right front limb
     glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_B.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.3f, -0.3f, -0.3f); // Left front limb
+    glTranslatef(0.2f, -0.3f, 0.1f); // Left back limb
     glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_C.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(-0.3f, -0.3f, -0.3f); // Right front limb
+    glTranslatef(-0.2f, -0.3f, 0.1f); // Right back limb
     glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_D.m);
     glPopMatrix();
