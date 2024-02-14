@@ -217,6 +217,7 @@ void drawText() {
     // Render the text strings
     renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 20, GLUT_BITMAP_9_BY_15, "Press 'Up Arrow' to decrease u_v_factor and increase resolution");
     renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 35, GLUT_BITMAP_9_BY_15, "Press 'Down Arrow' to increase u_v_factor and decrease resolution");
+    renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 50, GLUT_BITMAP_9_BY_15, "Press 'R' for random surface");
 
     // Restore the previous projection and modelview matrices
     glPopMatrix();
