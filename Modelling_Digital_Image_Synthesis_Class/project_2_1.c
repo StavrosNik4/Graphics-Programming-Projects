@@ -12,10 +12,6 @@ typedef struct DogPart {
     struct DogPart* child;
 } DogPart;
 
-// Camera global variables
-float cameraX = 1.0;
-float cameraZ = 2.0;
-
 // Initialize the dog parts
 DogPart body, neck, head, upper_limb_A, lower_limb_A, paw_A, upper_limb_B, lower_limb_B, paw_B, upper_limb_C, lower_limb_C, paw_C, upper_limb_D, lower_limb_D, paw_D;
 
@@ -188,7 +184,6 @@ void drawDogPart(DogPart* part) {
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     // Update gluLookAt with dynamic cameraX and cameraZ values
@@ -197,12 +192,11 @@ void display() {
         0.0, 1.0, 0.0);          // up vector
 
     glColor3f(1.0, 1.0, 1.0);
-    glEnable(GL_DEPTH_TEST);
 
-    //drawDogPart(&body);
+    drawDogPart(&body);
 
 
-    glFlush(); // Use glFlush() for single buffering
+    glutSwapBuffers();
 }
 
 void setupProjection() {
@@ -219,11 +213,88 @@ void reshape(int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+void applyTransformations() {
+    // Body is at the origin, so no need to move it
+    // Apply rotation to the body if needed, for example:
+    //rotateMatrix(body.m, 90.0f, 0.0f, 1.0f, 0.0f); // If you want to rotate the body
+
+    // Neck
+    // Translate the neck to be at the top of the body
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.25f, 1.0f); // Adjust these values as needed
+    glRotatef(-25.0f, 1.0f, 0.0f, 0.0f); // Slight forward tilt
+    glGetFloatv(GL_MODELVIEW_MATRIX, neck.m);
+    glPopMatrix();
+
+    // Head
+    // Translate the head to be at the top of the neck
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.1f, 0.4f); // Adjust these values as needed
+    glGetFloatv(GL_MODELVIEW_MATRIX, head.m);
+    glPopMatrix();
+
+    // Upper limbs
+    // Translate and rotate each upper limb to the correct position relative to the body
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(-0.3f, -0.3f, 0.3f); // Left front limb
+    glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
+    glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_A.m);
+    glPopMatrix();
+
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.3f, -0.3f, 0.3f); // Right front limb
+    glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
+    glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_B.m);
+    glPopMatrix();
+
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.3f, -0.3f, -0.3f); // Left front limb
+    glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
+    glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_C.m);
+    glPopMatrix();
+
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(-0.3f, -0.3f, -0.3f); // Right front limb
+    glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
+    glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_D.m);
+    glPopMatrix();
+
+
+
+    /*
+    // Lower limbs
+    // Translate each lower limb to be at the bottom of the upper limb
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.0f, -0.4f, 0.0f); // Adjust these values as needed
+    glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_A.m);
+    glPopMatrix();
+
+    // Repeat the process for lower limbs B, C, and D
+
+    // Paws
+    // Translate each paw to be at the bottom of the lower limb
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.0f, -0.3f, 0.0f); // Adjust these values as needed
+    glGetFloatv(GL_MODELVIEW_MATRIX, paw_A.m);
+    glPopMatrix();
+
+    // Repeat the process for paws B, C, and D
+    */
+}
+
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
 
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(500, 500);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("What the dog doin?");
@@ -233,11 +304,15 @@ int main(int argc, char** argv) {
     // Set the display function
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
+    
 
     initializeMatrices();
     createTree();
     initQuadric();
     assignDrawingFunctions();
+
+    // Call this function after initializing matrices and before entering the GLUT main loop
+    applyTransformations();
 
 
     // Enter the GLUT main loop
