@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// Constant values
 #define M_PI  3.14159265358979323846
 
 // Structure to represent each dog part
@@ -17,36 +18,14 @@ float cameraAngle = 0.0f;
 float cameraX = 5.0f;
 float cameraZ = 0.0f;
 
-// Initialize the dog parts
-DogPart body, neck, head, upper_limb_A, lower_limb_A, paw_A, upper_limb_B, lower_limb_B, paw_B, upper_limb_C, lower_limb_C, paw_C, upper_limb_D, lower_limb_D, paw_D;
+// Define the dog parts
+DogPart body, neck, head, 
+        upper_limb_A, lower_limb_A, paw_A, 
+        upper_limb_B, lower_limb_B, paw_B, 
+        upper_limb_C, lower_limb_C, paw_C, 
+        upper_limb_D, lower_limb_D, paw_D;
 
-// Function to set an identity matrix
-void setIdentityMatrix(GLfloat* matrix) {
-    for (int i = 0; i < 16; i++) {
-        matrix[i] = 0.0f;
-    }
-    // Set diagonal to 1
-    matrix[0] = matrix[5] = matrix[10] = matrix[15] = 1.0f;
-}
-
-void initializeMatrices() {
-    setIdentityMatrix(body.m);
-    setIdentityMatrix(neck.m);
-    setIdentityMatrix(head.m);
-    setIdentityMatrix(upper_limb_A.m);
-    setIdentityMatrix(lower_limb_A.m);
-    setIdentityMatrix(paw_A.m);
-    setIdentityMatrix(upper_limb_B.m);
-    setIdentityMatrix(lower_limb_B.m);
-    setIdentityMatrix(paw_B.m);
-    setIdentityMatrix(upper_limb_C.m);
-    setIdentityMatrix(lower_limb_C.m);
-    setIdentityMatrix(paw_C.m);
-    setIdentityMatrix(upper_limb_D.m);
-    setIdentityMatrix(lower_limb_D.m);
-    setIdentityMatrix(paw_D.m);
-}
-
+// function to create the tree of Greg
 void createTree() {
     // Body has no siblings and neck as a child
     body.sibling = NULL;
@@ -102,6 +81,15 @@ void createTree() {
 
 }
 
+// Function to set an identity matrix to a part's matrix 
+void setIdentityMatrix(GLfloat* matrix) {
+    for (int i = 0; i < 16; i++) {
+        matrix[i] = 0.0f;
+    }
+    // Set diagonal to 1
+    matrix[0] = matrix[5] = matrix[10] = matrix[15] = 1.0f;
+}
+
 GLUquadric* quadric;
 
 void initQuadric() {
@@ -109,43 +97,61 @@ void initQuadric() {
     gluQuadricNormals(quadric, GLU_SMOOTH);
 }
 
-void drawLimbNeck() {
-    glColor3f(1.0, 1.0, 1.0);
-    gluCylinder(quadric, 0.1, 0.1, 0.2, 32, 32); // Example dimensions
+// Drawing functions
+
+void drawBody() {
+    glColor3f(1.0, 0.0, 0.0); // red
+    gluCylinder(quadric, 0.3, 0.3, 1.0, 32, 32);
+}
+
+void drawNeck() {
+    glColor3f(1.0, 1.0, 1.0); // white
+    gluCylinder(quadric, 0.1, 0.1, 0.2, 32, 32);
+}
+
+void drawHead() {
+    glColor3f(0.0, 0.0, 1.0); // blue
+    gluSphere(quadric, 0.25, 32, 32);
 }
 
 void drawUpperLimb() {
-    glColor3f(1.0, 1.0, 1.0);
-    gluCylinder(quadric, 0.1, 0.1, 0.4, 32, 32); // Example dimensions
+    glColor3f(0.0, 1.0, 0.0); // green
+    gluCylinder(quadric, 0.1, 0.1, 0.4, 32, 32);
 }
 
 void drawLowerLimb() {
-    glColor3f(1.0, 1.0, 1.0);
-    gluCylinder(quadric, 0.08, 0.08, 0.3, 32, 32); // Example dimensions
+    glColor3f(0.0, 0.0, 1.0); // blue
+    gluCylinder(quadric, 0.08, 0.08, 0.3, 32, 32);
 }
 
 void drawPaw() {
-    glColor3f(1.0, 1.0, 1.0);
-    gluCylinder(quadric, 0.08, 0.08, 0.3, 32, 32); // Example dimensions
+    glColor3f(1.0, 1.0, 0.0); // yellow
+    gluCylinder(quadric, 0.04, 0.04, 0.2, 32, 32);
 }
 
-// Function to draw the body
-void drawBody() {
-    glColor3f(1.0, 0.0, 0.0);
-    gluCylinder(quadric, 0.3, 0.3, 1.0, 32, 32); // Example dimensions
-}
+// Function to assign each part with theri drawing function
+void initializeDogParts() {
 
-// Function to draw the head as a sphere
-void drawHead() {
-    glColor3f(0.0, 0.0, 1.0);
-    gluSphere(quadric, 0.25, 32, 32); // Example dimensions
-}
+    // initialize Matrices
+    setIdentityMatrix(body.m);
+    setIdentityMatrix(neck.m);
+    setIdentityMatrix(head.m);
+    setIdentityMatrix(upper_limb_A.m);
+    setIdentityMatrix(lower_limb_A.m);
+    setIdentityMatrix(paw_A.m);
+    setIdentityMatrix(upper_limb_B.m);
+    setIdentityMatrix(lower_limb_B.m);
+    setIdentityMatrix(paw_B.m);
+    setIdentityMatrix(upper_limb_C.m);
+    setIdentityMatrix(lower_limb_C.m);
+    setIdentityMatrix(paw_C.m);
+    setIdentityMatrix(upper_limb_D.m);
+    setIdentityMatrix(lower_limb_D.m);
+    setIdentityMatrix(paw_D.m);
 
-
-
-void assignDrawingFunctions() {
+    // assign drawing functions
     body.f = drawBody;
-    neck.f = drawLimbNeck;
+    neck.f = drawNeck;
     head.f = drawHead;
     upper_limb_A.f = drawUpperLimb;
     lower_limb_A.f = drawLowerLimb;
@@ -186,7 +192,6 @@ void drawDogPart(DogPart* part) {
     }
 }
 
-
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -195,8 +200,6 @@ void display() {
     gluLookAt(cameraX, 0.0, cameraZ,  // eye position
         0.0, 0.0, 0.0,           // center position (looking at)
         0.0, 1.0, 0.0);          // up vector
-
-    glColor3f(1.0, 1.0, 1.0);
 
     drawDogPart(&body);
 
@@ -212,16 +215,13 @@ void setupProjection() {
 }
 
 
-
 // Function to handle the window reshape properly
 void reshape(int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void applyTransformations() {
+void applyInitialTransformations() {
     // Body is at the origin, so no need to move it
-    // Apply rotation to the body if needed, for example:
-    //rotateMatrix(body.m, 90.0f, 0.0f, 1.0f, 0.0f); // If you want to rotate the body
 
     // Neck
     // Translate the neck to be at the top of the body
@@ -270,29 +270,93 @@ void applyTransformations() {
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_D.m);
     glPopMatrix();
 
-
-
-    /*
     // Lower limbs
     // Translate each lower limb to be at the bottom of the upper limb
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, -0.4f, 0.0f); // Adjust these values as needed
+    glTranslatef(0.0f, 0.0f, 0.4f); // Adjust these values as needed
     glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_A.m);
     glPopMatrix();
 
-    // Repeat the process for lower limbs B, C, and D
-
-    // Paws
-    // Translate each paw to be at the bottom of the lower limb
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, -0.3f, 0.0f); // Adjust these values as needed
+    glTranslatef(0.0f, 0.0f, 0.4f); // Adjust these values as needed
+    glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_B.m);
+    glPopMatrix();
+
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, 0.4f); // Adjust these values as needed
+    glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_C.m);
+    glPopMatrix();
+
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, 0.4f); // Adjust these values as needed
+    glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_D.m);
+    glPopMatrix();
+     
+    // Paws
+    // Translate each paw to be at the bottom of the lower limb
+
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, 0.3f); // Adjust these values as needed
+    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); // Rotate outward
     glGetFloatv(GL_MODELVIEW_MATRIX, paw_A.m);
     glPopMatrix();
 
-    // Repeat the process for paws B, C, and D
-    */
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, 0.3f); // Adjust these values as needed
+    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); // Rotate outward
+    glGetFloatv(GL_MODELVIEW_MATRIX, paw_B.m);
+    glPopMatrix();
+
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, 0.3f); // Adjust these values as needed
+    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); // Rotate outward
+    glGetFloatv(GL_MODELVIEW_MATRIX, paw_C.m);
+    glPopMatrix();
+
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, 0.3f); // Adjust these values as needed
+    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); // Rotate outward
+    glGetFloatv(GL_MODELVIEW_MATRIX, paw_D.m);
+    glPopMatrix();
+
+}
+
+// menu callback function
+void menu(int id)
+{
+
+    if (id == 1) {
+        cameraX = 0.0f;
+        cameraZ = 5.0f;
+        glutPostRedisplay();
+    }
+
+    if (id == 2) {
+        cameraX = 5.0f;
+        cameraZ = 0.0f;
+        glutPostRedisplay();
+    }
+
+
+    if (id == 5) exit(0);
+
+}
+
+// create menu and options
+void createMenu() {
+    glutCreateMenu(menu);
+    glutAddMenuEntry("Camera View 1", 1);
+    glutAddMenuEntry("Camera View 2", 2);
+    glutAddMenuEntry("Quit", 5);
+    glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
 }
 
 
@@ -302,7 +366,9 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(500, 500);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("What the dog doin?");
+    glutCreateWindow("What the dog doin? - Greg");
+
+    glEnable(GL_DEPTH_TEST);
 
     setupProjection();
 
@@ -310,15 +376,14 @@ int main(int argc, char** argv) {
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     
+    createMenu();
 
-    initializeMatrices();
-    createTree();
     initQuadric();
-    assignDrawingFunctions();
+    initializeDogParts();
+    createTree();
 
     // Call this function after initializing matrices and before entering the GLUT main loop
-    applyTransformations();
-
+    applyInitialTransformations();
 
     // Enter the GLUT main loop
     glutMainLoop();
