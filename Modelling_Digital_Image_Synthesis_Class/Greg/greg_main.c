@@ -23,10 +23,7 @@ int main(int argc, char** argv) {
 
     initQuadric();
     initializeDogParts();
-    createTree();
-
-    // Call this function after initializing matrices and before entering the GLUT main loop
-    applyInitialTransformations();
+    createTree();   
 
     // Enter the GLUT main loop
     glutMainLoop();
