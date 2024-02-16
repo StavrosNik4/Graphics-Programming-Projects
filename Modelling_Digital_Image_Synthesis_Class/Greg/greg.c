@@ -1,9 +1,17 @@
 #include "greg.h"
 
+
 // Camera global variables
 float cameraAngle = 0.0f;
 float cameraX = 5.0f;
 float cameraZ = 0.0f;
+
+float neckBendAngle = 0.0f;
+int isAnimating = 0;
+float animationSpeed = 1.0f; // Adjust as needed
+float originalNeckBendAngle = 0.0f;
+float animationTimer = 0.0;
+int animationDuration = 100; // Adjust as needed
 
 // Define the dog parts
 DogPart body, neck, head,
@@ -154,23 +162,72 @@ void initializeDogParts() {
     paw_D.f = drawPaw;
 }
 
+// Animation types
+enum AnimationType { BEND, LIFT };
+enum AnimationType animationType = BEND; // Initialize to BEND
+
+
+void updateAnimation() {
+    if (isAnimating) {
+        if (animationTimer < animationDuration) {
+            // Calculate the progress of the animation (0.0 to 1.0)
+            float progress = animationTimer / (float)animationDuration;
+
+            if (animationType == BEND) {
+                // Interpolate the neck bend angle between the original and final angles
+                neckBendAngle = originalNeckBendAngle + (80.0 * progress); // 85.0 is the maximum angle
+            }
+            else if (animationType == LIFT) {
+                // Interpolate the neck bend angle between the final and original angles
+                neckBendAngle = originalNeckBendAngle + (80.0 * (1.0 - progress)); // 80.0 is the maximum angle
+            }
+
+            // Increment the animation timer
+            animationTimer+=1.65;
+            glutPostRedisplay(); // Request a redraw to show the updated animation state
+        }
+        else {
+            // Animation is complete
+            if (animationType == BEND) {
+                // Start the lift animation
+                animationType = LIFT;
+                //originalNeckBendAngle = neckBendAngle;
+                animationTimer = 0; // Reset animation timer
+                glutPostRedisplay(); // Request a redraw to start the lift animation
+            }
+            else {
+                // Lift animation is complete
+                isAnimating = 0;
+                animationTimer = 0; // Reset animation timer
+                neckBendAngle = originalNeckBendAngle; // Set the final angle
+                animationType = BEND;
+                glutPostRedisplay(); // Request a redraw to show the final animation state
+            }
+        }
+    }
+}
+
+
+
+
 void applyInitialTransformations() {
     // Body is at the origin, so no need to move it
 
-    // Neck
+     // Neck
     // Translate the neck to be at the top of the body
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.25f, 1.0f); // Adjust these values as needed
-    glRotatef(-25.0f, 1.0f, 0.0f, 0.0f); // Slight forward tilt
+    glRotatef(-25.0f + neckBendAngle, 1.0f, 0.0f, 0.0f); // Slight forward tilt + bending animation
     glGetFloatv(GL_MODELVIEW_MATRIX, neck.m);
     glPopMatrix();
 
     // Head
-    // Translate the head to be at the top of the neck
+   // Translate the head to be at the top of the neck
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.1f, 0.4f); // Adjust these values as needed
+    glRotatef(neckBendAngle, 1.0f, 0.0f, 0.0f); // Head follows the neck bending
     glGetFloatv(GL_MODELVIEW_MATRIX, head.m);
     glPopMatrix();
 
@@ -297,11 +354,18 @@ void display() {
         0.0, 0.0, 0.0,           // center position (looking at)
         0.0, 1.0, 0.0);          // up vector
 
-    drawDogPart(&body);
+    // Apply initial transformations
+    applyInitialTransformations();
 
+    // Update the animation
+    updateAnimation();
+
+    // Draw the dog
+    drawDogPart(&body);
 
     glutSwapBuffers();
 }
+
 
 void setupProjection() {
     glMatrixMode(GL_PROJECTION);
@@ -325,12 +389,18 @@ void menu(int id)
         glutPostRedisplay();
     }
 
-    if (id == 2) {
+    else if (id == 2) {
         cameraX = 5.0f;
         cameraZ = 0.0f;
         glutPostRedisplay();
     }
 
+    else  if (id == 3 && !isAnimating) { // Ensure animation is not already in progress
+        // Start the animation
+        isAnimating = 1;
+        originalNeckBendAngle = neckBendAngle; // Store the original angle
+        glutPostRedisplay();
+    }
 
     if (id == 5) exit(0);
 
@@ -341,6 +411,7 @@ void createMenu() {
     glutCreateMenu(menu);
     glutAddMenuEntry("Camera View 1", 1);
     glutAddMenuEntry("Camera View 2", 2);
+    glutAddMenuEntry("bend neck", 3);
     glutAddMenuEntry("Quit", 5);
     glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
 }
