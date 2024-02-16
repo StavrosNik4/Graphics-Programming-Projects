@@ -1,7 +1,6 @@
 #include "greg.h"
 
-
-// Camera global variables
+// Camera Global Variables
 float cameraAngle = 0.0f;
 float cameraX = 5.0f;
 float cameraZ = 0.0f;
@@ -14,16 +13,21 @@ float animationSpeed = 1.0f; // Adjust as needed
 float animationTimer = 0.0;
 int animationDuration = 100; // Adjust as needed
 
+// neck animation related 
 float neckBendAngle = 0.0f;
 float originalNeckBendAngle = 0.0f;
 
-float upperLimbAAngle = 0.0f;
-float lowerLimbAAngle = 0.0f;
-float pawAAngle = 0.0f;
-float originalUpperLimbAAngle = 0.0f;
-float originalLowerLimbAAngle = 0.0f;
-float originalPawAAngle = 0.0f;
+// leg animation related
+float upperLimbAngle = 0.0f;
+float lowerLimbAngle = 0.0f;
+float pawAngle = 0.0f;
+float originalUpperLimbAngle = 0.0f;
+float originalLowerLimbAngle = 0.0f;
+float originalPawAngle = 0.0f;
 
+// Animation types
+enum AnimationType { START, FINISH };
+enum AnimationType animationType = START;
 
 // Define the dog parts
 DogPart body, neck, head,
@@ -174,36 +178,35 @@ void initializeDogParts() {
     paw_D.f = drawPaw;
 }
 
-// Animation types
-enum AnimationType { BEND, LIFT };
-enum AnimationType animationType = BEND; // Initialize to BEND
-
-void updateAnimation(float angle) {
+void updateAnimation() {
     if (isAnimating) {
         if (animationTimer < animationDuration) {
             float progress = animationTimer / (float)animationDuration;
 
-            // For neck bending
+            // For neck animation
             if (animation_id == 1) {
-                if (animationType == BEND) {
+                if (animationType == START) {
                     neckBendAngle = originalNeckBendAngle + (80.0 * progress);
                 }
-                else if (animationType == LIFT) {
+                else if (animationType == FINISH) {
                     neckBendAngle = originalNeckBendAngle + (80.0 * (1.0 - progress));
                 }
             }
-            // For front leg lifting
+            // For front leg animation
             else if (animation_id == 2) {
-                if (animationType == BEND) {
-                    upperLimbAAngle = originalUpperLimbAAngle + (-70.0f * progress); // Rotate upper limb by 30 degrees
-                    lowerLimbAAngle = originalLowerLimbAAngle + (90.0f * progress); // Rotate lower limb by 90 degrees
-                    pawAAngle = originalPawAAngle + (170.0f * progress); // Rotate lower limb by 90 degrees
+                if (animationType == START) {
+                    upperLimbAngle = originalUpperLimbAngle + (-70.0f * progress); // Rotate upper limb by 30 degrees
+                    lowerLimbAngle = originalLowerLimbAngle + (90.0f * progress); // Rotate lower limb by 90 degrees
+                    pawAngle = originalPawAngle + (170.0f * progress); // Rotate lower limb by 90 degrees
                 }
-                else if (animationType == LIFT) {
-                    upperLimbAAngle = originalUpperLimbAAngle + (-70.0f * (1.0 - progress)); // Rotate upper limb by 30 degrees
-                    lowerLimbAAngle = originalLowerLimbAAngle + (90.0f * (1.0 - progress)); // Rotate lower limb by 90 degrees
-                    pawAAngle = originalPawAAngle + (170.0f * (1.0 - progress)); // Rotate lower limb by 90 degrees
+                else if (animationType == FINISH) {
+                    upperLimbAngle = originalUpperLimbAngle + (-70.0f * (1.0 - progress)); // Rotate upper limb by 30 degrees
+                    lowerLimbAngle = originalLowerLimbAngle + (90.0f * (1.0 - progress)); // Rotate lower limb by 90 degrees
+                    pawAngle = originalPawAngle + (170.0f * (1.0 - progress)); // Rotate lower limb by 90 degrees
                 }
+            }
+            else if (animation_id == 3) {
+
             }
 
             animationTimer += animationSpeed;
@@ -211,21 +214,21 @@ void updateAnimation(float angle) {
         }
         else {
             // Handle animation completion
-            if (animationType == BEND) {
-                animationType = LIFT;
+            if (animationType == START) {
+                animationType = FINISH;
                 animationTimer = 0;
             }
             else {
-                animationType = BEND;
+                animationType = START;
                 isAnimating = 0;
                 animationTimer = 0; // Reset animation timer
                 if (animation_id == 1) {
-                    animationType = BEND;
+                    animationType = START;
                     neckBendAngle = originalNeckBendAngle;
                 }
                 else if (animation_id == 2) {
-                    upperLimbAAngle = originalUpperLimbAAngle;
-                    lowerLimbAAngle = originalLowerLimbAAngle;
+                    upperLimbAngle = originalUpperLimbAngle;
+                    lowerLimbAngle = originalLowerLimbAngle;
                 }
             }
             glutPostRedisplay();
@@ -234,7 +237,7 @@ void updateAnimation(float angle) {
 }
 
 
-void applyInitialTransformations() {
+void applyTransformations() {
     // Body is at the origin, so no need to move it
 
      // Neck
@@ -259,14 +262,14 @@ void applyInitialTransformations() {
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(-0.2f, -0.3f, 0.8f); // Left front limb
-    glRotatef(90.0f - upperLimbAAngle, 45.0f, 0.0f, 1.0f); // Rotate outward
+    glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_A.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.2f, -0.3f, 0.8f); // Right front limb
-    glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
+    glRotatef(90.0f - upperLimbAngle, 45.0f, 0.0f, 1.0f); // Rotate outward
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_B.m);
     glPopMatrix();
 
@@ -289,14 +292,13 @@ void applyInitialTransformations() {
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.4f); // Adjust these values as needed
-    glRotatef(-lowerLimbAAngle, lowerLimbAAngle, 0.0f, 1.0f); // Apply rotation based on animation
     glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_A.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.4f); // Adjust these values as needed
-    glRotatef(0.0f, 45.0f, 0.0f, 1.0f); // Adjust these values as needed
+    glRotatef(-lowerLimbAngle, lowerLimbAngle, 0.0f, 1.0f); // Adjust these values as needed
     glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_B.m);
     glPopMatrix();
 
@@ -318,14 +320,14 @@ void applyInitialTransformations() {
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.3f); // Adjust these values as needed
-    glRotatef(90.0f - pawAAngle, -180.0f - pawAAngle, 0.0f, 1.0f); // Rotate outward
+    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); // Rotate outward
     glGetFloatv(GL_MODELVIEW_MATRIX, paw_A.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.3f); // Adjust these values as needed
-    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); // Rotate outward
+    glRotatef(90.0f - pawAngle, -180.0f - pawAngle, 0.0f, 1.0f); // Rotate outward
     glGetFloatv(GL_MODELVIEW_MATRIX, paw_B.m);
     glPopMatrix();
 
@@ -379,26 +381,21 @@ void display() {
         0.0, 0.0, 0.0,           // center position (looking at)
         0.0, 1.0, 0.0);          // up vector
 
-    // Apply initial transformations
-    applyInitialTransformations();
 
-    if (animation_id == 1) {
-     // Update the animation
-        updateAnimation(80.0f);
-    }
-    else if (animation_id == 2) {
-        updateAnimation(0.0f);
-    }
-   
+    // Select Animation
+    if (animation_id == 1)
+        updateAnimation();
+    else if (animation_id == 2)
+        updateAnimation();
 
-    
+    // Apply transformations
+    applyTransformations();
 
     // Draw the dog
     drawDogPart(&body);
 
     glutSwapBuffers();
 }
-
 
 void setupProjection() {
     glMatrixMode(GL_PROJECTION);
@@ -415,34 +412,26 @@ void reshape(int width, int height) {
 // menu callback function
 void menu(int id)
 {
-
     if (id == 1) {
         cameraX = 0.0f;
         cameraZ = 5.0f;
         glutPostRedisplay();
     }
-
     else if (id == 2) {
         cameraX = 5.0f;
         cameraZ = 0.0f;
         glutPostRedisplay();
     }
-
-    else  if (id == 3 && !isAnimating) { // Ensure animation is not already in progress
-        // Start the animation
-        isAnimating = 1;
-        animation_id = 1;
-        originalNeckBendAngle = neckBendAngle; // Store the original angle
+    else  if (id == 3 && !isAnimating) // Ensure animation is not already in progress
         glutPostRedisplay();
-    }
-
-    else  if (id == 4 && !isAnimating) { // Ensure animation is not already in progress
-        isAnimating = 1;
-        animation_id = 2;
+    else  if (id == 4 && !isAnimating)
         glutPostRedisplay();
-    }
+    else  if (id == 5 && !isAnimating)
+        glutPostRedisplay();
 
-    if (id == 5) exit(0);
+    if (id == 3 || id == 4 || id == 5) { animation_id = id - 2;  isAnimating = 1; }
+    
+    if (id == 6) exit(0);
 
 }
 
@@ -451,8 +440,9 @@ void createMenu() {
     glutCreateMenu(menu);
     glutAddMenuEntry("Camera View 1", 1);
     glutAddMenuEntry("Camera View 2", 2);
-    glutAddMenuEntry("bend neck", 3);
-    glutAddMenuEntry("front leg", 4);
-    glutAddMenuEntry("Quit", 5);
+    glutAddMenuEntry("Animation 1 - Bow Neck", 3);
+    glutAddMenuEntry("Animation 2 - Front Leg", 4);
+    glutAddMenuEntry("Animation 3 - Standing Up", 5);
+    glutAddMenuEntry("Quit", 6);
     glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
 }
