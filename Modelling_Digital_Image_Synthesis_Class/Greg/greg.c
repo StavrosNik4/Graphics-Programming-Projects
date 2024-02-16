@@ -422,15 +422,15 @@ void menu(int id)
         cameraZ = 0.0f;
         glutPostRedisplay();
     }
-    else  if (id == 3 && !isAnimating) // Ensure animation is not already in progress
+    else  if (id == 3 ) // Ensure animation is not already in progress
         glutPostRedisplay();
-    else  if (id == 4 && !isAnimating)
+    else  if (id == 4 )
         glutPostRedisplay();
-    else  if (id == 5 && !isAnimating)
+    else  if (id == 5 )
         glutPostRedisplay();
 
-    if (id == 3 || id == 4 || id == 5) { animation_id = id - 2;  isAnimating = 1; }
-    
+    if ((id == 3 && !isAnimating ) || (id == 4 && !isAnimating) || (id == 5 && !isAnimating)) { animation_id = id - 2;  isAnimating = 1; }
+
     if (id == 6) exit(0);
 
 }
