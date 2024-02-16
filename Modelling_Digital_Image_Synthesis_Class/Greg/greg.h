@@ -36,7 +36,7 @@ void drawUpperLimb();
 void drawLowerLimb();
 void drawPaw();
 void initializeDogParts();
-void applyInitialTransformations();
+void applyTransformations();
 void drawDogPart(DogPart* part);
 void display();
 void setupProjection();
