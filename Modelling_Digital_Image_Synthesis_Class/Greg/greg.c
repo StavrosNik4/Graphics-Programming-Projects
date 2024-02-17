@@ -8,10 +8,11 @@ float cameraZ = 0.0f;
 // Animation Global Variables
 int animation_id = 0;
 int isAnimating = 0;
+int reseting = 0;
 
-float animationSpeed = 1.0f; // Adjust as needed
+float animationSpeed = 0.95f;
 float animationTimer = 0.0;
-int animationDuration = 100; // Adjust as needed
+int animationDuration = 100;
 
 // neck animation related 
 float neckBendAngle = 0.0f;
@@ -145,34 +146,44 @@ void initializeDogParts() {
 
     // initialize Matrices
     setIdentityMatrix(body.m);
+    
     setIdentityMatrix(neck.m);
     setIdentityMatrix(head.m);
+    
     setIdentityMatrix(upper_limb_A.m);
     setIdentityMatrix(lower_limb_A.m);
     setIdentityMatrix(paw_A.m);
+    
     setIdentityMatrix(upper_limb_B.m);
     setIdentityMatrix(lower_limb_B.m);
     setIdentityMatrix(paw_B.m);
+    
     setIdentityMatrix(upper_limb_C.m);
     setIdentityMatrix(lower_limb_C.m);
     setIdentityMatrix(paw_C.m);
+    
     setIdentityMatrix(upper_limb_D.m);
     setIdentityMatrix(lower_limb_D.m);
     setIdentityMatrix(paw_D.m);
 
     // assign drawing functions
     body.f = drawBody;
+    
     neck.f = drawNeck;
     head.f = drawHead;
+
     upper_limb_A.f = drawUpperLimb;
     lower_limb_A.f = drawLowerLimb;
     paw_A.f = drawPaw;
+
     upper_limb_B.f = drawUpperLimb;
     lower_limb_B.f = drawLowerLimb;
     paw_B.f = drawPaw;
+
     upper_limb_C.f = drawUpperLimb;
     lower_limb_C.f = drawLowerLimb;
     paw_C.f = drawPaw;
+
     upper_limb_D.f = drawUpperLimb;
     lower_limb_D.f = drawLowerLimb;
     paw_D.f = drawPaw;
@@ -188,7 +199,7 @@ void updateAnimation() {
                 if (animationType == START) {
                     neckBendAngle = originalNeckBendAngle + (80.0 * progress);
                 }
-                else if (animationType == FINISH) {
+                else if (animationType == FINISH && reseting == 1) {
                     neckBendAngle = originalNeckBendAngle + (80.0 * (1.0 - progress));
                 }
             }
@@ -199,7 +210,7 @@ void updateAnimation() {
                     lowerLimbAngle = originalLowerLimbAngle + (90.0f * progress); // Rotate lower limb by 90 degrees
                     pawAngle = originalPawAngle + (170.0f * progress); // Rotate lower limb by 90 degrees
                 }
-                else if (animationType == FINISH) {
+                else if (animationType == FINISH && reseting == 1) {
                     upperLimbAngle = originalUpperLimbAngle + (-70.0f * (1.0 - progress)); // Rotate upper limb by 30 degrees
                     lowerLimbAngle = originalLowerLimbAngle + (90.0f * (1.0 - progress)); // Rotate lower limb by 90 degrees
                     pawAngle = originalPawAngle + (170.0f * (1.0 - progress)); // Rotate lower limb by 90 degrees
@@ -217,40 +228,40 @@ void updateAnimation() {
             if (animationType == START) {
                 animationType = FINISH;
                 animationTimer = 0;
+                isAnimating = 0;
             }
             else {
                 animationType = START;
-                isAnimating = 0;
                 animationTimer = 0; // Reset animation timer
+                isAnimating = 0;
+                reseting = 0;
                 if (animation_id == 1) {
-                    animationType = START;
                     neckBendAngle = originalNeckBendAngle;
                 }
                 else if (animation_id == 2) {
                     upperLimbAngle = originalUpperLimbAngle;
                     lowerLimbAngle = originalLowerLimbAngle;
                 }
+                animation_id = 0;
             }
             glutPostRedisplay();
         }
     }
 }
 
-
+// Function to apply the transformations to each part
 void applyTransformations() {
-    // Body is at the origin, so no need to move it
+    // Body 
 
-     // Neck
-    // Translate the neck to be at the top of the body
+    // Neck
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, 0.25f, 1.0f); // Adjust these values as needed
-    glRotatef(-25.0f + neckBendAngle, 1.0f, 0.0f, 0.0f); // Slight forward tilt + bending animation
+    glTranslatef(0.0f, 0.25f, 1.0f);
+    glRotatef(-25.0f + neckBendAngle, 1.0f, 0.0f, 0.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, neck.m);
     glPopMatrix();
 
     // Head
-   // Translate the head to be at the top of the neck
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.1f, 0.4f); // Adjust these values as needed
@@ -258,90 +269,86 @@ void applyTransformations() {
     glPopMatrix();
 
     // Upper limbs
-    // Translate and rotate each upper limb to the correct position relative to the body
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(-0.2f, -0.3f, 0.8f); // Left front limb
-    glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
+    glTranslatef(-0.2f, -0.3f, 0.8f);
+    glRotatef(90.0f, 45.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_A.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.2f, -0.3f, 0.8f); // Right front limb
-    glRotatef(90.0f - upperLimbAngle, 45.0f, 0.0f, 1.0f); // Rotate outward
+    glTranslatef(0.2f, -0.3f, 0.8f);
+    glRotatef(90.0f - upperLimbAngle, 45.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_B.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.2f, -0.3f, 0.1f); // Left back limb
-    glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
+    glTranslatef(0.2f, -0.3f, 0.1f);
+    glRotatef(90.0f, 45.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_C.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(-0.2f, -0.3f, 0.1f); // Right back limb
-    glRotatef(90.0f, 45.0f, 0.0f, 1.0f); // Rotate outward
+    glTranslatef(-0.2f, -0.3f, 0.1f);
+    glRotatef(90.0f, 45.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_D.m);
     glPopMatrix();
 
     // Lower limbs
-    // Translate each lower limb to be at the bottom of the upper limb
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, 0.4f); // Adjust these values as needed
+    glTranslatef(0.0f, 0.0f, 0.4f);
     glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_A.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, 0.4f); // Adjust these values as needed
-    glRotatef(-lowerLimbAngle, lowerLimbAngle, 0.0f, 1.0f); // Adjust these values as needed
+    glTranslatef(0.0f, 0.0f, 0.4f);
+    glRotatef(-lowerLimbAngle, lowerLimbAngle, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_B.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, 0.4f); // Adjust these values as needed
+    glTranslatef(0.0f, 0.0f, 0.4f); 
     glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_C.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, 0.4f); // Adjust these values as needed
+    glTranslatef(0.0f, 0.0f, 0.4f); 
     glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_D.m);
     glPopMatrix();
 
     // Paws
-    // Translate each paw to be at the bottom of the lower limb
-
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, 0.3f); // Adjust these values as needed
-    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); // Rotate outward
+    glTranslatef(0.0f, 0.0f, 0.3f);
+    glRotatef(90.0f, -180.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, paw_A.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, 0.3f); // Adjust these values as needed
-    glRotatef(90.0f - pawAngle, -180.0f - pawAngle, 0.0f, 1.0f); // Rotate outward
+    glTranslatef(0.0f, 0.0f, 0.3f);
+    glRotatef(90.0f - pawAngle, -180.0f - pawAngle, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, paw_B.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, 0.3f); // Adjust these values as needed
-    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); // Rotate outward
+    glTranslatef(0.0f, 0.0f, 0.3f);
+    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); 
     glGetFloatv(GL_MODELVIEW_MATRIX, paw_C.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, 0.3f); // Adjust these values as needed
-    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); // Rotate outward
+    glTranslatef(0.0f, 0.0f, 0.3f); 
+    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); 
     glGetFloatv(GL_MODELVIEW_MATRIX, paw_D.m);
     glPopMatrix();
 
@@ -422,16 +429,20 @@ void menu(int id)
         cameraZ = 0.0f;
         glutPostRedisplay();
     }
-    else  if (id == 3 ) // Ensure animation is not already in progress
-        glutPostRedisplay();
-    else  if (id == 4 )
-        glutPostRedisplay();
-    else  if (id == 5 )
-        glutPostRedisplay();
 
-    if ((id == 3 && !isAnimating ) || (id == 4 && !isAnimating) || (id == 5 && !isAnimating)) { animation_id = id - 2;  isAnimating = 1; }
+    if ((id == 3 || id == 4 || id == 5) && !isAnimating && animationType == START) { 
+        animation_id = id - 2;  
+        isAnimating = 1; 
+        glutPostRedisplay(); 
+    }
+    
+    if (id == 6 && !isAnimating && animationType == FINISH) {
+        reseting = 1;
+        isAnimating = 1;
+        glutPostRedisplay();
+    }
 
-    if (id == 6) exit(0);
+    if (id == 7) exit(0);
 
 }
 
@@ -442,7 +453,8 @@ void createMenu() {
     glutAddMenuEntry("Camera View 2", 2);
     glutAddMenuEntry("Animation 1 - Bow Neck", 3);
     glutAddMenuEntry("Animation 2 - Front Leg", 4);
-    glutAddMenuEntry("Animation 3 - Standing Up", 5);
-    glutAddMenuEntry("Quit", 6);
+    //glutAddMenuEntry("Animation 3 - Standing Up", 5);
+    glutAddMenuEntry("Reset Position", 6);
+    glutAddMenuEntry("Quit", 7);
     glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
 }
