@@ -11,7 +11,9 @@ University Projects for Graphics classes with OpenGL (GLUT)
 
 ## Modelling - Digital Image Synthesis Class Projects
 
-### Project 1: Splines
+### Project 1.1: Splines
+
+### Project 1.2: Bicubic Surface
 
 ### Project 2.1: Modular Hierarchical Dog Model
 
