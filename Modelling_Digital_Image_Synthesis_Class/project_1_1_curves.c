@@ -63,7 +63,7 @@ void drawCubicCurve(float points[4][3]) {
 }
 
 void drawQuestion1() {
-    
+
     if (drawEnabled) {
         float segment[4][3]; // Temporary storage for a segment of four control points
 
@@ -79,7 +79,7 @@ void drawQuestion1() {
         // Note: The second segment starts at controlPoints[3], so it includes controlPoints[3] to controlPoints[6]
         for (int i = 0; i < 4; i++)
             for (int j = 0; j < 3; j++)
-                segment[i][j] = controlPoints[i + 3][j]; // Adjust index to get the second segment
+                segment[i][j] = controlPoints[i + 3][j];
 
         glColor3f(0.0, 0.0, 1.0);
         drawCubicCurve(segment);
@@ -88,18 +88,18 @@ void drawQuestion1() {
     drawControlPoints();
 }
 
-// Function to interpolate between two points. Used in deCasteljau
+// Function to interpolate between two points. Used in deCasteljau (for question 2)
 void interpolate(float* dest, float* a, float* b, float t) {
     dest[0] = (1 - t) * a[0] + t * b[0];
     dest[1] = (1 - t) * a[1] + t * b[1];
     dest[2] = (1 - t) * a[2] + t * b[2];
 }
 
-// de Casteljau's recursive function to compute a point on the Bezier curve
+// de Casteljau's recursive function to compute a point on the Bezier curve (for question 2)
 void deCasteljau(float* dest, float t, float points[][3], int degree) {
     // We'll allocate a fixed-size array based on the maximum degree we expect.
     // For a 6th-degree Bezier curve, we need a maximum of 6 interpolations.
-    float newpoints[6][3]; // This will work for up to a 6th-degree curve
+    float newpoints[6][3];
 
     // If we only have two points left, interpolate between them and return
     if (degree == 1) {
@@ -246,6 +246,8 @@ void mouse(int button, int state, int x, int y) {
     glutPostRedisplay();
 }
 
+// Function that handles the update of the curves on screen. 
+// It's also responsible for holding the C1 continuity in question 3.
 void motion(int x, int y) {
     if (selectedPoint != -1) {
         double w = glutGet(GLUT_WINDOW_WIDTH);
@@ -261,7 +263,7 @@ void motion(int x, int y) {
         double dx = oldX - controlPoints[selectedPoint][0];
         double dy = oldY - controlPoints[selectedPoint][1];
 
-        // Check if the question is equal to 3 for special handling
+        // Check if the question is equal to 3 for handling C1 continuity
         if (question == 3) {
             // Handling when point 3 is selected
             if (selectedPoint == 3) {
@@ -291,6 +293,7 @@ void motion(int x, int y) {
     }
 }
 
+// Function that handles the window reshape
 void reshape(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
@@ -303,7 +306,6 @@ void reshape(int w, int h) {
 // menu callback function
 void menu(int id)
 {
-
     if (id == 1) {
         question = 1;
         pointCount = 0;
@@ -336,7 +338,7 @@ void createMenu() {
     glutAddMenuEntry("2", 2);
     glutAddMenuEntry("3", 3);
     glutAddMenuEntry("Quit", 5);
-    glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
 int main(int argc, char** argv) {
