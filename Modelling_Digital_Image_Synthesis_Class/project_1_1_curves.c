@@ -21,7 +21,6 @@ float M[4][4] = {
     {-4.5, 13.5, -13.5, 4.5}
 };
 
-
 // Support function to draw control points
 void drawControlPoints() {
     glPointSize(5.0);
@@ -62,6 +61,7 @@ void drawCubicCurve(float points[4][3]) {
     glEnd(); // End drawing the line strip
 }
 
+// Function to draw the results of question 1
 void drawQuestion1() {
 
     if (drawEnabled) {
@@ -115,6 +115,7 @@ void deCasteljau(float* dest, float t, float points[][3], int degree) {
     deCasteljau(dest, t, newpoints, degree - 1);
 }
 
+// Function to draw the results of question 2
 void drawCurveQuestion2() {
     if (drawEnabled) {
         // First and last point are the same
@@ -137,6 +138,7 @@ void drawCurveQuestion2() {
     drawControlPoints();
 }
 
+// Support function to draw a 4th degree bezier (for question 3)
 void drawBezierCurve(float points[4][3]) {
     glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, points);
     glBegin(GL_LINE_STRIP);
@@ -145,6 +147,7 @@ void drawBezierCurve(float points[4][3]) {
     glEnd();
 }
 
+// Function to draw the results of question 3
 void drawCurveQuestion3() {
 
     if (drawEnabled) {
@@ -175,17 +178,15 @@ void drawCurveQuestion3() {
     drawControlPoints();
 }
 
+// Display Function
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
-    glColor3f(0.0, 1.0, 0.0);
 
     if (question == 1)
         drawQuestion1();
-
-    if (question == 2)
+    else if (question == 2)
         drawCurveQuestion2();
-
-    if (question == 3)
+    else if (question == 3)
         drawCurveQuestion3();
 
     glFlush();
