@@ -13,9 +13,9 @@ float cameraZ = 15.0f;
 
 int surfaceType = 1;
 
+// Surface points related variables
 float u_v_factor = 0.01f;
 float pointSize = 1.0f;
-
 
 // basis matrix for cubic interpolation (for question 1)
 float M[4][4] = {
@@ -115,8 +115,7 @@ void updateSurfaceControlPoints() {
             for (int j = 0; j < 4; j++) {
                 surfaceControlPoints[i][j][0] = (float)j; // x, structured grid
                 surfaceControlPoints[i][j][1] = (float)i; // y, structured grid
-                // Generate random z values within a range for a wavy effect
-                // Adjust the range as needed for your specific use case
+                // Generating random z values within a range for a wavy effect
                 surfaceControlPoints[i][j][2] = (float)(rand() % 20) / 10.0f - 1.0f; // Random z for wavy effect
             }
         }
@@ -141,6 +140,7 @@ void drawControlPoints() {
     glEnd();
 }
 
+// Support function to get the control point
 void getSurfacePoint(float u, float v, float controlPoints[4][4][3], float result[3]) {
     float U[4] = { 1.0, u, u * u, u * u * u };
     float V[4] = { 1.0, v, v * v, v * v * v };
@@ -168,11 +168,10 @@ void getSurfacePoint(float u, float v, float controlPoints[4][4][3], float resul
     }
 
     // Compute the final interpolated point in the v direction
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 4; j++)
             result[i] += controlPointsU[j][i] * VM[j];
-        }
-    }
+
 }
 
 void drawBicubicSurface() {
@@ -181,14 +180,13 @@ void drawBicubicSurface() {
 
     glColor3f(0.0, 1.0, 0.0);
 
+    // Draw each point
     for (float u = 0; u <= 1; u += u_v_factor) {
         for (float v = 0; v <= 1; v += u_v_factor) {
             float surfacePoint[3];
             getSurfacePoint(u, v, surfaceControlPoints, surfacePoint);
-            // Now, you would draw this point on the surface
-            // For example, you might use glVertex3fv(surfacePoint) inside a glBegin(GL_POINTS) block
             glBegin(GL_POINTS);
-                glVertex3fv(surfacePoint);
+            glVertex3fv(surfacePoint);
             glEnd();
         }
     }
@@ -217,7 +215,8 @@ void drawText() {
     // Render the text strings
     renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 20, GLUT_BITMAP_9_BY_15, "Press 'Up Arrow' to decrease u_v_factor and increase resolution");
     renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 35, GLUT_BITMAP_9_BY_15, "Press 'Down Arrow' to increase u_v_factor and decrease resolution");
-    renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 50, GLUT_BITMAP_9_BY_15, "Press 'R' for random surface");
+    renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 50, GLUT_BITMAP_9_BY_15, "Press 'Left Arrow' or 'Right Arrow' to navigate");
+    renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 65, GLUT_BITMAP_9_BY_15, "Press 'R' for random surface");
 
     // Restore the previous projection and modelview matrices
     glPopMatrix();
@@ -241,11 +240,11 @@ void display() {
 
     glColor3f(0.0, 1.0, 0.0); // Set the color of the surface to green
 
-    drawBicubicSurface(); // Draw the surface
+    drawBicubicSurface();
 
-    drawControlPoints(); // Draw the control points
+    drawControlPoints();
 
-    glFlush(); // Flush the rendered output to the screen
+    glFlush();
 }
 
 
@@ -363,7 +362,7 @@ int main(int argc, char** argv) {
 
     init();
 
-    createMenu(); // create menu and options
+    createMenu();
 
     glutSpecialFunc(specialKeys);
     glutKeyboardFunc(keyboard);
