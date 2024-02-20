@@ -26,7 +26,7 @@ typedef struct {
 } Particle;
 
 // Global variable array to save all the particles
-Particle particles[MAX_PARTICLES]; 
+Particle particles[MAX_PARTICLES];
 
 void changeParticleColors() {
     for (int i = 0; i < MAX_PARTICLES; i++) {
@@ -91,7 +91,7 @@ void activateParticles() {
 void updateParticle(Particle* p, float deltaTime) {
 
     // Check if particle is active. Update only active particles.
-    if (!p->isActive) return; 
+    if (!p->isActive) return;
 
     float gravity[3] = { 0.0f, GRAVITY, 0.0f };
 
@@ -99,7 +99,7 @@ void updateParticle(Particle* p, float deltaTime) {
         p->velocity[i] += gravity[i] * deltaTime;
         p->position[i] += p->velocity[i] * deltaTime;
     }
-    // Check if the particle is below the floor
+    // Check if the particle is below the floor, below y = 0
     if (p->position[1] < 0.0f) {
         p->position[1] = 0.0f;
         p->velocity[1] *= -0.8f; // Add some damping effect to the bounce
@@ -174,6 +174,7 @@ void drawText() {
     // Render the text strings
     renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 20, GLUT_BITMAP_9_BY_15, "Press 'R' to restart.");
     renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 35, GLUT_BITMAP_9_BY_15, "Press '1-4' to change colors.");
+    renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 50, GLUT_BITMAP_9_BY_15, "Use left and right key to inspect.");
 
     // Restore the previous projection and modelview matrices
     glPopMatrix();
@@ -242,8 +243,6 @@ void timer(int value) {
     glutTimerFunc(16, timer, 0); // Approx. 60 times per second
 }
 
-
-
 // Keyboard callback functions
 void keyboard(unsigned char key, int x, int y) {
     switch (key) {
@@ -282,19 +281,19 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(800, 600);
     glutCreateWindow("Particle System");
-    
+
     // OpenGL initialazation
     initGL();
 
     // begin
     initializeParticles();
-    
+
     // Registering callback functions
     glutSpecialFunc(moveCamera);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutTimerFunc(0, timer, 0);
-    glutKeyboardFunc(keyboard); 
+    glutKeyboardFunc(keyboard);
 
     glutMainLoop();
     return 0;
