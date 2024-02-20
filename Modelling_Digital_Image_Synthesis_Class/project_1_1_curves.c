@@ -88,13 +88,23 @@ void drawQuestion1() {
     drawControlPoints();
 }
 
-// Function to interpolate between two points. Used in deCasteljau (for question 2)
+// Function to linearly interpolate between two points. Used in deCasteljau (for question 2).
+// The interpolation is parameterized by t, where t=0 corresponds to point a, and t=1 corresponds to point b.
+// dest: Destination array to store the interpolated point.
+// a: The starting point of the interpolation. 
+// b: The ending point of the interpolation.
+// t: The interpolation parameter, typically in the range [0, 1].
 void interpolate(float* dest, float* a, float* b, float t) {
-    dest[0] = (1 - t) * a[0] + t * b[0];
-    dest[1] = (1 - t) * a[1] + t * b[1];
-    dest[2] = (1 - t) * a[2] + t * b[2];
+    dest[0] = (1 - t) * a[0] + t * b[0]; // Interpolate X coordinate
+    dest[1] = (1 - t) * a[1] + t * b[1]; // Interpolate Υ coordinate
+    dest[2] = (1 - t) * a[2] + t * b[2]; // Interpolate Ζ coordinate
 }
 
+// Recursive implementation of de Casteljau's algorithm to compute a point on a Bezier curve.
+// dest: Destination array to store the computed point on the curve.
+// t: The parameter value, typically in the range [0, 1], indicating the position on the curve.
+// points: The array of control points defining the Bezier curve.
+// degree: The degree of the Bezier curve, which is one less than the number of control points.
 // de Casteljau's recursive function to compute a point on the Bezier curve (for question 2)
 void deCasteljau(float* dest, float t, float points[][3], int degree) {
     // We'll allocate a fixed-size array based on the maximum degree we expect.
@@ -102,12 +112,12 @@ void deCasteljau(float* dest, float t, float points[][3], int degree) {
     float newpoints[6][3];
 
     // If we only have two points left, interpolate between them and return
-    if (degree == 1) {
+    if (degree == 1) { // Base case: when only two points are left, directly interpolate between them.
         interpolate(dest, points[0], points[1], t);
         return;
     }
 
-    // Interpolate between each pair of points
+    // For each pair of adjacent points, interpolate based on t and store the result in newpoints.
     for (int i = 0; i < degree; ++i)
         interpolate(newpoints[i], points[i], points[i + 1], t);
 
@@ -118,18 +128,18 @@ void deCasteljau(float* dest, float t, float points[][3], int degree) {
 // Function to draw the results of question 2
 void drawCurveQuestion2() {
     if (drawEnabled) {
-        // First and last point are the same
+        // Ensuring the curve is closed by setting the last control point equal to the first.
         controlPoints[6][0] = controlPoints[0][0];
         controlPoints[6][1] = controlPoints[0][1];
         controlPoints[6][2] = controlPoints[0][2];
 
         glColor3f(0.0, 1.0, 0.0);
         glBegin(GL_LINE_STRIP);
-        float point[3]; // Point on the curve
+        float point[3]; // Temporary storage for the computed point on the curve.
         for (int i = 0; i <= 30; i++) {
             float t = (float)i / 30.0f; // Parameter t
-            deCasteljau(point, t, controlPoints, 6); // Compute a point on the curve
-            glVertex3fv(point); // Draw the point
+            deCasteljau(point, t, controlPoints, 6); // Compute a point on the curve using de Casteljau's algorithm.
+            glVertex3fv(point); // Draw the computed point
         }
         glEnd();
 
@@ -198,7 +208,7 @@ float distance(float x1, float y1, float x2, float y2) {
 }
 
 void mouse(int button, int state, int x, int y) {
-    const float d = 3.0f;
+    const float d = 3.0f; // distance small value
     double w = glutGet(GLUT_WINDOW_WIDTH);
     double h = glutGet(GLUT_WINDOW_HEIGHT);
     float worldX = (x - w / 2) * 20.0 / w;
@@ -281,7 +291,7 @@ void motion(int x, int y) {
             // Handling when point 2 or 4 is selected
             else if (selectedPoint == 2 || selectedPoint == 4) {
                 int mirrorPoint = (selectedPoint == 2) ? 4 : 2; // Determine the point to mirror
-                int pivotPoint = 3; // Assuming point 3 is the pivot for mirroring
+                int pivotPoint = 3; // point 3 is the pivot for mirroring
 
                 // Apply the mirroring formula
                 controlPoints[mirrorPoint][0] = 2 * controlPoints[pivotPoint][0] - controlPoints[selectedPoint][0];
