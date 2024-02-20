@@ -10,32 +10,40 @@ int animation_id = 0;
 int isAnimating = 0;
 int reseting = 0;
 
+int messageFlag = 0;
+
 float animationSpeed = 0.95f;
 float animationTimer = 0.0;
-int animationDuration = 100;
+float animationDuration = 100.0;
 
 // neck animation related 
 float neckBendAngle = 0.0f;
-float originalNeckBendAngle = 0.0f;
 
 // leg animation related
 float upperLimbAngle = 0.0f;
 float lowerLimbAngle = 0.0f;
 float pawAngle = 0.0f;
-float originalUpperLimbAngle = 0.0f;
-float originalLowerLimbAngle = 0.0f;
-float originalPawAngle = 0.0f;
 
-// Animation types
-enum AnimationType { START, FINISH };
-enum AnimationType animationType = START;
+// body animation related
+float bodyY = 0.0f;
+float bodyAngle = 0.0f;
+float frontUpperLimbAngle = 0.0f;
+float frontLowerLimbAngle = 0.0f;
+float frontPawAngle = 0.0f;
+float backUpperLimbAngle = 0.0f;
+float backLowerLimbAngle = 0.0f;
+float backPawAngle = 0.0f;
+
+// Animation state types
+enum AnimationStateType { START, FINISH };
+enum AnimationStateType animationStateType = START;
 
 // Define the dog parts
 DogPart body, neck, head,
-upper_limb_A, lower_limb_A, paw_A,
-upper_limb_B, lower_limb_B, paw_B,
-upper_limb_C, lower_limb_C, paw_C,
-upper_limb_D, lower_limb_D, paw_D;
+        upper_limb_A, lower_limb_A, paw_A,
+        upper_limb_B, lower_limb_B, paw_B,
+        upper_limb_C, lower_limb_C, paw_C,
+        upper_limb_D, lower_limb_D, paw_D;
 
 // function to create the tree of Greg
 void createTree() {
@@ -141,7 +149,7 @@ void drawPaw() {
     gluCylinder(quadric, 0.04, 0.04, 0.2, 32, 32);
 }
 
-// Function to assign each part with theri drawing function
+// Function to assign each part with their drawing function
 void initializeDogParts() {
 
     // initialize Matrices
@@ -196,28 +204,54 @@ void updateAnimation() {
 
             // For neck animation
             if (animation_id == 1) {
-                if (animationType == START) {
-                    neckBendAngle = originalNeckBendAngle + (80.0 * progress);
+                if (animationStateType == START) {
+                    neckBendAngle = (80.0 * progress);
                 }
-                else if (animationType == FINISH && reseting == 1) {
-                    neckBendAngle = originalNeckBendAngle + (80.0 * (1.0 - progress));
+                else if (animationStateType == FINISH && reseting == 1) {
+                    neckBendAngle = (80.0 * (1.0 - progress));
                 }
             }
             // For front leg animation
             else if (animation_id == 2) {
-                if (animationType == START) {
-                    upperLimbAngle = originalUpperLimbAngle + (-70.0f * progress); // Rotate upper limb by 30 degrees
-                    lowerLimbAngle = originalLowerLimbAngle + (90.0f * progress); // Rotate lower limb by 90 degrees
-                    pawAngle = originalPawAngle + (170.0f * progress); // Rotate lower limb by 90 degrees
+                if (animationStateType == START) {
+                    upperLimbAngle = (-70.0f * progress); // Rotate upper limb by 70 degrees
+                    lowerLimbAngle = (90.0f * progress); // Rotate lower limb by 90 degrees
+                    pawAngle =  (170.0f * progress); // Rotate lower limb by 170 degrees
                 }
-                else if (animationType == FINISH && reseting == 1) {
-                    upperLimbAngle = originalUpperLimbAngle + (-70.0f * (1.0 - progress)); // Rotate upper limb by 30 degrees
-                    lowerLimbAngle = originalLowerLimbAngle + (90.0f * (1.0 - progress)); // Rotate lower limb by 90 degrees
-                    pawAngle = originalPawAngle + (170.0f * (1.0 - progress)); // Rotate lower limb by 90 degrees
+                else if (animationStateType == FINISH && reseting == 1) {
+                    upperLimbAngle = (-70.0f * (1.0 - progress)); // Rotate upper limb by 70 degrees
+                    lowerLimbAngle = + (90.0f * (1.0 - progress)); // Rotate lower limb by 90 degrees
+                    pawAngle = (170.0f * (1.0 - progress)); // Rotate lower limb by 170 degrees
                 }
             }
+            // Back Legs animation
             else if (animation_id == 3) {
+                if (animationStateType == START) {
+                    bodyY = 0.7f * progress;
+                    bodyAngle = (80.0f * progress);
+                    neckBendAngle = (60.0 * progress);
 
+                    frontUpperLimbAngle = (-80.0f * progress);
+                    frontLowerLimbAngle = (80.0f * progress);
+                    frontPawAngle = (170.0f * progress);
+
+                    backUpperLimbAngle = (-120.0f * progress);
+                    backLowerLimbAngle = (130.0f * progress);
+                    backPawAngle = (90.0f * progress);
+                }
+                else if (animationStateType == FINISH && reseting == 1) {
+                    bodyY = 0.7f * (1.0 - progress);
+                    bodyAngle = (90.0f * (1.0 - progress));
+                    neckBendAngle = (60.0 * (1.0 - progress));
+                    
+                    frontUpperLimbAngle = (-80.0f * (1.0 - progress));
+                    frontLowerLimbAngle = (80.0f * (1.0 - progress));
+                    frontPawAngle = (170.0f * (1.0 - progress));
+
+                    backUpperLimbAngle = (-120.0f * (1.0 - progress));
+                    backLowerLimbAngle = (130.0f * (1.0 - progress));
+                    backPawAngle = (90.0f * (1.0 - progress));
+                }
             }
 
             animationTimer += animationSpeed;
@@ -225,25 +259,15 @@ void updateAnimation() {
         }
         else {
             // Handle animation completion
-            if (animationType == START) {
-                animationType = FINISH;
-                animationTimer = 0;
-                isAnimating = 0;
-            }
+            if (animationStateType == START)
+                animationStateType = FINISH;
             else {
-                animationType = START;
-                animationTimer = 0; // Reset animation timer
-                isAnimating = 0;
+                animationStateType = START;
                 reseting = 0;
-                if (animation_id == 1) {
-                    neckBendAngle = originalNeckBendAngle;
-                }
-                else if (animation_id == 2) {
-                    upperLimbAngle = originalUpperLimbAngle;
-                    lowerLimbAngle = originalLowerLimbAngle;
-                }
                 animation_id = 0;
             }
+            animationTimer = 0;
+            isAnimating = 0;
             glutPostRedisplay();
         }
     }
@@ -252,12 +276,23 @@ void updateAnimation() {
 // Function to apply the transformations to each part
 void applyTransformations() {
     // Body 
+    glPushMatrix();
+    glLoadIdentity();
+    if (animation_id == 3) {
+        glTranslatef(0.0, -bodyY, 0.0f);
+        glRotatef(bodyAngle, -bodyAngle, 0.0f, 0.0f);
+    }
+    glGetFloatv(GL_MODELVIEW_MATRIX, body.m);
+    glPopMatrix();
 
     // Neck
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.25f, 1.0f);
-    glRotatef(-25.0f + neckBendAngle, 1.0f, 0.0f, 0.0f);
+    if(animation_id == 1 || animation_id == 3)
+        glRotatef(-25.0f + neckBendAngle, 1.0f, 0.0f, 0.0f);
+    else
+        glRotatef(-25.0f, 1.0f, 0.0f, 0.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, neck.m);
     glPopMatrix();
 
@@ -272,28 +307,42 @@ void applyTransformations() {
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(-0.2f, -0.3f, 0.8f);
-    glRotatef(90.0f, 45.0f, 0.0f, 1.0f);
+    if (animation_id == 3)
+        glRotatef(90.0f - frontUpperLimbAngle, 45.0f, 0.0f, 1.0f);
+    else
+        glRotatef(90.0f, 45.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_A.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.2f, -0.3f, 0.8f);
-    glRotatef(90.0f - upperLimbAngle, 45.0f, 0.0f, 1.0f);
+    if (animation_id == 3)
+        glRotatef(90.0f - frontUpperLimbAngle, 45.0f, 0.0f, 1.0f);
+    else if (animation_id == 2)
+        glRotatef(90.0f - upperLimbAngle, 45.0f, 0.0f, 1.0f);
+    else
+        glRotatef(90.0f, 45.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_B.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.2f, -0.3f, 0.1f);
-    glRotatef(90.0f, 45.0f, 0.0f, 1.0f);
+    if (animation_id == 3)
+        glRotatef(90.0f - backUpperLimbAngle, 45.0f, 0.0f, 1.0f);
+    else
+        glRotatef(90.0f, 45.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_C.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(-0.2f, -0.3f, 0.1f);
-    glRotatef(90.0f, 45.0f, 0.0f, 1.0f);
+    if (animation_id == 3)
+        glRotatef(90.0f - backUpperLimbAngle, 45.0f, 0.0f, 1.0f);
+    else
+        glRotatef(90.0f, 45.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, upper_limb_D.m);
     glPopMatrix();
 
@@ -301,25 +350,34 @@ void applyTransformations() {
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.4f);
+    if(animation_id == 3)
+        glRotatef(-frontLowerLimbAngle, frontLowerLimbAngle, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_A.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.4f);
-    glRotatef(-lowerLimbAngle, lowerLimbAngle, 0.0f, 1.0f);
+    if (animation_id == 3)
+        glRotatef(-frontLowerLimbAngle, frontLowerLimbAngle, 0.0f, 1.0f);
+    else if (animation_id == 2)
+        glRotatef(-lowerLimbAngle, lowerLimbAngle, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_B.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.4f); 
+    if (animation_id == 3)
+        glRotatef(-backLowerLimbAngle, backLowerLimbAngle, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_C.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.4f); 
+    if (animation_id == 3)
+        glRotatef(-backLowerLimbAngle, backLowerLimbAngle, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, lower_limb_D.m);
     glPopMatrix();
 
@@ -327,28 +385,42 @@ void applyTransformations() {
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.3f);
-    glRotatef(90.0f, -180.0f, 0.0f, 1.0f);
+    if (animation_id == 3)
+        glRotatef(90.0f - frontPawAngle, -180.0f - frontPawAngle, 0.0f, 1.0f);
+    else
+        glRotatef(90.0f, -180.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, paw_A.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.3f);
-    glRotatef(90.0f - pawAngle, -180.0f - pawAngle, 0.0f, 1.0f);
+    if (animation_id == 3)
+        glRotatef(90.0f - frontPawAngle, -180.0f - frontPawAngle, 0.0f, 1.0f);
+    else if (animation_id == 2)
+        glRotatef(90.0f - pawAngle, -180.0f - pawAngle, 0.0f, 1.0f);
+    else
+        glRotatef(90.0f, -180.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, paw_B.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.3f);
-    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); 
+    if(animation_id == 3)
+        glRotatef(90.0f - backPawAngle, -180.0f, 0.0f, 1.0f);
+    else
+        glRotatef(90.0f, -180.0f, 0.0f, 1.0f); 
     glGetFloatv(GL_MODELVIEW_MATRIX, paw_C.m);
     glPopMatrix();
 
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, 0.3f); 
-    glRotatef(90.0f, -180.0f, 0.0f, 1.0f); 
+    if (animation_id == 3)
+        glRotatef(90.0f - backPawAngle, -180.0f, 0.0f, 1.0f);
+    else
+        glRotatef(90.0f, -180.0f, 0.0f, 1.0f);
     glGetFloatv(GL_MODELVIEW_MATRIX, paw_D.m);
     glPopMatrix();
 
@@ -379,6 +451,50 @@ void drawDogPart(DogPart* part) {
     }
 }
 
+void renderBitmapString(float x, float y, void* font, const char* string) {
+    const char* c;
+    float x_start = x;
+    int line_height = 18; // Adjust line height as needed
+
+    for (c = string; *c != '\0'; c++) {
+        // Wrap text if it exceeds the window width
+        if (*c == '\n' || x + glutBitmapWidth(font, *c) > glutGet(GLUT_WINDOW_WIDTH)) {
+            y -= line_height; // Move to the next line
+            x = x_start;      // Reset x position
+            if (*c == '\n')   // Skip newline characters
+                continue;
+        }
+
+        glRasterPos2f(x, y);
+        glutBitmapCharacter(font, *c);
+        x += glutBitmapWidth(font, *c); // Move x for the next character
+    }
+}
+
+void drawMessage() {
+    // Set the color to white for the text
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    // Move back to a 2D view to draw the text
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, glutGet(GLUT_WINDOW_WIDTH), 0.0, glutGet(GLUT_WINDOW_HEIGHT));
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    // Render the text strings
+    renderBitmapString(10, glutGet(GLUT_WINDOW_HEIGHT) - 20, GLUT_BITMAP_9_BY_15, 
+        "Warning! You need to reset the position of the model to perform another animation.");
+
+    // Restore the previous projection and modelview matrices
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
+
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -388,11 +504,15 @@ void display() {
         0.0, 0.0, 0.0,           // center position (looking at)
         0.0, 1.0, 0.0);          // up vector
 
+    if(messageFlag)
+        drawMessage();
 
     // Select Animation
     if (animation_id == 1)
         updateAnimation();
     else if (animation_id == 2)
+        updateAnimation();
+    else if (animation_id == 3)
         updateAnimation();
 
     // Apply transformations
@@ -430,15 +550,18 @@ void menu(int id)
         glutPostRedisplay();
     }
 
-    if ((id == 3 || id == 4 || id == 5) && !isAnimating && animationType == START) { 
+    if ((id == 3 || id == 4 || id == 5) && !isAnimating && animationStateType == START) {
         animation_id = id - 2;  
         isAnimating = 1; 
+        messageFlag = 1;
         glutPostRedisplay(); 
     }
     
-    if (id == 6 && !isAnimating && animationType == FINISH) {
+    
+    if (id == 6 && !isAnimating && animationStateType == FINISH) {
         reseting = 1;
         isAnimating = 1;
+        messageFlag = 0;
         glutPostRedisplay();
     }
 
@@ -453,7 +576,7 @@ void createMenu() {
     glutAddMenuEntry("Camera View 2", 2);
     glutAddMenuEntry("Animation 1 - Bow Neck", 3);
     glutAddMenuEntry("Animation 2 - Front Leg", 4);
-    //glutAddMenuEntry("Animation 3 - Standing Up", 5);
+    glutAddMenuEntry("Animation 3 - Standing Up", 5);
     glutAddMenuEntry("Reset Position", 6);
     glutAddMenuEntry("Quit", 7);
     glutAttachMenu(GLUT_RIGHT_BUTTON); // bind to right click
