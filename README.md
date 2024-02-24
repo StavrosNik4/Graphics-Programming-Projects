@@ -17,7 +17,7 @@ University Projects for Graphics classes with OpenGL (GLUT)
 
 ### Project 2.1: Modular Hierarchical Dog Model
 
-Simple Dog model with 3 different animations and an option to reset to the original position.
+Simple dog model with 3 different animations and an option to reset to the original position. The model consists of 15 different parts and a Left Child Right Simpling Tree implementation is used to handle the transformations. 
 
 ### Project 2.2: Particles System
 
