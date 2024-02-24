@@ -1,4 +1,4 @@
-# Graphics-Projects
+# Graphics Programming Projects
 University Projects for Graphics classes with OpenGL (GLUT)
 
 ## Computer Graphics Class Projects
