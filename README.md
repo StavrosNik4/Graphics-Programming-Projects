@@ -1,5 +1,5 @@
 # Graphics Programming Projects
-University Projects for Graphics classes with OpenGL (GLUT)
+University Projects for Graphics classes. Implemented with C and OpenGL (GLUT).
 
 ## Computer Graphics Class Projects
 
