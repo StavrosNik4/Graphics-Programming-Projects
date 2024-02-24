@@ -26,3 +26,5 @@ Simple dog model with 3 different animations and an option to reset to the origi
 Simple fountain like particles system. It produces contiously 1000 particles from a specific point of the "sky" with some initial forces, 
 those particles then fall to the field by the force of the gravity and then they bounce until they stay still on the field. You can change the 
 color of the particles and also restart the process through keyboard shortcuts.
+
+<img src="https://github.com/StavrosNik4/Graphics-Projects/blob/8f4fe631a5d772fe430b1a7010933d3f8900c925/Screenshots/particles.gif" width=700px;> 
