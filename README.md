@@ -19,7 +19,7 @@ University Projects for Graphics classes with OpenGL (GLUT)
 
 Simple dog model with 3 different animations and an option to reset to the original position. The model consists of 15 different parts and a Left Child Right Simpling Tree implementation is used to handle the transformations. 
 
-<img src="https://github.com/StavrosNik4/Graphics-Projects/blob/8f4fe631a5d772fe430b1a7010933d3f8900c925/Screenshots/dog.gif" width=700px;> 
+<img src="https://github.com/StavrosNik4/Graphics-Projects/blob/8f4fe631a5d772fe430b1a7010933d3f8900c925/Screenshots/dog.gif"> 
 
 ### Project 2.2: Particles System
 
@@ -27,4 +27,4 @@ Simple fountain like particles system. It produces contiously 1000 particles fro
 those particles then fall to the field by the force of the gravity and then they bounce until they stay still on the field. You can change the 
 color of the particles and also restart the process through keyboard shortcuts.
 
-<img src="https://github.com/StavrosNik4/Graphics-Projects/blob/8f4fe631a5d772fe430b1a7010933d3f8900c925/Screenshots/particles.gif" width=700px;> 
+<img src="https://github.com/StavrosNik4/Graphics-Projects/blob/132bb018f3c4415ff619c63c38452e7f98ddddf4/Screenshots/particles.gif"> 
