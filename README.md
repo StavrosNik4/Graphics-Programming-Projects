@@ -3,6 +3,8 @@ University Projects for Graphics classes. Implemented with C and OpenGL (GLUT).
 
 ## Computer Graphics Class Projects
 
+This is a collection of 3 projects we made during the semester of the Computer Graphics class. Although they are quite simple they taught us the basics of Graphics Programming.
+
 ### Project 1: Fractals - The Basics
 
 ### Project 2: Cube - Basic Transforms
@@ -10,6 +12,8 @@ University Projects for Graphics classes. Implemented with C and OpenGL (GLUT).
 ### Project 3: House with sun - Lighting and Advanced Topics
 
 ## Modelling - Digital Image Synthesis Class Projects
+
+This is a collection of 2 projects (each with 2 subprojects) we made during the semester of the Modelling - Digital Image Synthesis Class class. During that time those projects taught us the math behind the Splines and Surfaces, the physics behind the particles systems and also the basics of animation.
 
 ### Project 1.1: Splines
 
