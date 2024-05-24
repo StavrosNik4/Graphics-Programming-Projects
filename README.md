@@ -42,3 +42,7 @@ those particles then fall to the field by the force of the gravity and then they
 color of the particles and also restart the process through keyboard shortcuts.
 
 <img src="https://github.com/StavrosNik4/Graphics-Projects/blob/132bb018f3c4415ff619c63c38452e7f98ddddf4/Screenshots/particles.gif"> 
+
+## How to run the executables
+
+Just download the .exe files and the .dll file, put them together in a folder and just run them.
