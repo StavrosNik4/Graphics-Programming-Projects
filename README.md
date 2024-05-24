@@ -1,6 +1,10 @@
 # Graphics Programming Projects
 University Projects for Graphics classes. Implemented with C and OpenGL (GLUT).
 
+## How to run the executables?
+
+Just download the .exe files and the .dll file, put them together in a folder and just run them.
+
 ## Computer Graphics Class Projects
 
 This is a collection of 3 projects we made during the semester of the Computer Graphics class. Although they are quite simple they taught us the basics of Graphics Programming.
@@ -43,6 +47,3 @@ color of the particles and also restart the process through keyboard shortcuts.
 
 <img src="https://github.com/StavrosNik4/Graphics-Projects/blob/132bb018f3c4415ff619c63c38452e7f98ddddf4/Screenshots/particles.gif"> 
 
-## How to run the executables?
-
-Just download the .exe files and the .dll file, put them together in a folder and just run them.
