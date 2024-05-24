@@ -7,17 +7,27 @@ This is a collection of 3 projects we made during the semester of the Computer G
 
 ### Project 1: Fractals - The Basics
 
-### Project 2: Cube - Basic Transforms
+Simple Fractals creation and camera movement through the mouse.
+
+### Project 2: Spinning Cube - Basic Transforms
+
+Simple creation of a cube and application of different basic transformations (Rotation, Translation, Scaling).
 
 ### Project 3: House with sun - Lighting and Advanced Topics
 
+We created a 3D scene of a house with a sun and also enhanced the scene with lighting techniques. The 3D object of the sun was created through recursive subdivision.
+
 ## Modelling - Digital Image Synthesis Class Projects
 
-This is a collection of 2 projects (each with 2 subprojects) we made during the semester of the Modelling - Digital Image Synthesis Class class. During that time those projects taught us the math behind the Splines and Surfaces, the physics behind the particles systems and also the basics of animation.
+This is a collection of 2 projects (each with 2 subprojects) we made during the semester of the Modelling - Digital Image Synthesis Class. During that time those projects taught us the math behind the Splines and Surfaces, the physics behind the particles systems and also the basics of animation.
 
 ### Project 1.1: Splines
 
+Different kinds of splines in an app.
+
 ### Project 1.2: Bicubic Surface
+
+A simple app that creates a wavy bicubic surface.
 
 ### Project 2.1: Modular Hierarchical Dog Model
 
