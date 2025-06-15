@@ -41,7 +41,7 @@ Simple dog model with 3 different animations and an option to reset to the origi
 
 ### Project 2.2: Particles System
 
-Simple fountain like particles system. It produces contiously 1000 particles from a specific point of the "sky" with some initial forces, 
+Simple fountain like particles system. It produces continuously 1000 particles from a specific point of the "sky" with some initial forces, 
 those particles then fall to the field by the force of the gravity and then they bounce until they stay still on the field. You can change the 
 color of the particles and also restart the process through keyboard shortcuts.
 
